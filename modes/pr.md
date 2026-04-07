@@ -56,7 +56,9 @@ If no commits ahead of main: stop.
 ⛔ No commits ahead of main. Nothing to PR.
 ```
 
-Detect optional Jira ticket from argument (link or key). Store as `TICKET_LINK` if provided, else `none`.
+Detect Jira ticket:
+- If an argument was provided (link or key): use it as `TICKET_LINK`.
+- If no argument: try to infer from the current branch name. Pattern `^(bug|feat|fix)/([A-Z]+-[0-9]+)` — extract the ticket key and set as `TICKET_LINK` (key only, not a URL). If the branch doesn't match, set `TICKET_LINK=none`.
 
 ## Phase 1 — Create PR
 Run **Shared: Create PR** with `TICKET_LINK`.

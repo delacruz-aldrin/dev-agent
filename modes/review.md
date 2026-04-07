@@ -95,7 +95,7 @@ gh api repos/{REPO}/commits/{PR_SHA}/check-runs --jq '.check_runs[] | {name, sta
 - Any `status != completed` → CI still running (treat as inconclusive)
 
 Submit review via `gh api repos/{REPO}/pulls/{pr_number}/reviews`:
-- `APPROVE` + "LGTM 🟢" — CI passes AND no blockers AND no suggestions
+- `APPROVE` + "Looks good — no blockers or suggestions." — CI passes AND no blockers AND no suggestions
 - `REQUEST_CHANGES` — any blockers present
 - `COMMENT` — suggestions only, or CI not fully passed / inconclusive (state CI status explicitly)
 

@@ -1,6 +1,6 @@
 ---
 name: dev-agent
-description: Ten-mode dev agent + config utility. Modes: audit (codebase assessment), fix (bug diagnosis+fix), refix (re-diagnose and fix a rejected/reverted deployment), build (generate endpoints), verify (PR root cause check), sweep (autonomous Jira→PR pipeline), respond (address PR comments), review (review colleague PRs), follow-up (Slack nudge for PR review), setup (follow setup docs and configure local environment with rollback support). Use "dev-agent config" to view, edit, or reset project config. Always reads settings from .claude/dev-agent.json.
+description: Eleven-mode dev agent + config utility. Modes: audit (codebase assessment), fix (bug diagnosis+fix), refix (re-diagnose and fix a rejected/reverted deployment), build (generate endpoints), verify (PR root cause check), sweep (autonomous Jira→PR pipeline), respond (address PR comments), review (review colleague PRs), follow-up (Slack nudge for PR review), setup (follow setup docs and configure local environment with rollback support), pr (open a PR for the current branch). Use "dev-agent config" to view, edit, or reset project config. Always reads settings from .claude/dev-agent.json.
 ---
 
 # Dev-Agent
@@ -27,6 +27,25 @@ On invocation, read the corresponding file from `~/.claude/skills/dev-agent/mode
 
 ---
 
+## Mode Chains
+
+Natural workflows across modes — use these as a guide for what to run next:
+
+| Situation | Mode sequence |
+|---|---|
+| New ticket assigned | `fix` or `build` → PR auto-created |
+| PR gets review comments | `respond` → re-requests review, polls CI |
+| PR gets rejected / reverted | `refix` → new branch, corrected fix, new PR |
+| Unsure a fix is correct before merging | `verify` → read-only analysis; add `--comment` to post findings as a GitHub review |
+| Reviewer needs a nudge | `follow-up` → posts to existing Slack thread |
+| Batch of tickets (end-of-sprint) | `sweep` → processes all assigned tickets sequentially |
+| Code smells / tech debt found | `audit` → surfaces risks, optionally files Jira tickets |
+| Review a colleague's PR | `review` → inline comments + verdict + Slack mention |
+| Manual code work done, need a PR | `pr` → opens PR for current branch |
+| New machine / environment setup | `setup <url>` → follows docs, snapshots state, supports rollback |
+
+---
+
 ## Shared: Config System
 
 ### Config File
@@ -40,7 +59,8 @@ On invocation, read the corresponding file from `~/.claude/skills/dev-agent/mode
   "slack_channel": "team-dev-agent",
   "slack_group": "likha-dev-agent-eng",
   "pr_reviewer_team": "dev-agent",
-  "pr_milestone": "Untracked"
+  "pr_milestone": "Untracked",
+  "base_branch": "main"
 }
 ```
 
@@ -56,6 +76,7 @@ The canonical key list (used for missing-key detection and validation):
 | `slack_group` | handle, no `@` | `likha-dev-agent-eng` |
 | `pr_reviewer_team` | GitHub team slug | `dev-agent` |
 | `pr_milestone` | exact milestone name | `Untracked` |
+| `base_branch` | exact branch name to open PRs against | `main` |
 
 ### JQL Project Expansion
 Whenever a mode builds a JQL query using `{jira_project}`, always expand it first:
@@ -254,7 +275,7 @@ Create via REST API:
 gh api repos/{REPO}/pulls -X POST \
   -f title="<title>" \
   -f head="<branch>" \
-  -f base="main" \
+  -f base="{base_branch}" \
   -f body="<filled template>" \
   --jq '.number, .html_url'
 ```

@@ -21,6 +21,8 @@ Scans the full codebase, surfaces risks and architectural issues, and optionally
 ## Phase 0 — Recon
 Read config. Run Backend Detection. Run Frontend Detection.
 
+Run **Shared: Frontend Convention Sampling** (unconditionally — audit always needs a grounded picture of FE patterns). Store sampled patterns as `FE_CONVENTIONS` for use in Phase 1 XML.
+
 Read silently based on `BE_FRAMEWORK`:
 - `rails`: `Gemfile`, `Gemfile.lock`, `config/routes.rb`, `app/` structure, `config/`
 - `express`: root `package.json`, `routes/`, `src/` structure
@@ -33,6 +35,7 @@ Read silently based on `BE_FRAMEWORK`:
 <prompt>
   <context>[Stack (BE_FRAMEWORK + version, STORE, API_CLIENT), architecture, key deps]</context>
   <files>[Key files across BE and FE, line counts, complexity flags]</files>
+  <conventions>[FE_CONVENTIONS — sampled patterns from closest existing components, hooks, and interfaces; omit if FRONTEND_ROOT=none]</conventions>
   <task>
     1. Top 3 highest-risk issues causing production bugs or performance degradation?
     2. Architectural inconsistencies slowing future development (BE and FE)?
