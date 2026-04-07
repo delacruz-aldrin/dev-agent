@@ -4,18 +4,18 @@ A multi-mode Claude Code skill that automates the full dev workflow — from Jir
 
 ## Modes
 
-| Command | What it does |
-|---|---|
-| `/dev-agent audit` | Codebase assessment — maps architecture, surfaces risks, generates Jira tickets |
-| `/dev-agent fix` | Diagnoses a bug from a Jira ticket and opens a PR |
-| `/dev-agent refix` | Re-diagnoses and fixes a rejected or reverted deployment |
-| `/dev-agent build` | Generates a full endpoint (backend + frontend) from a Jira ticket |
-| `/dev-agent sweep` | Autonomous pipeline — pulls a batch of Jira tickets and opens PRs for all of them |
-| `/dev-agent verify` | Root-cause checks a PR before merging |
-| `/dev-agent respond` | Addresses PR review comments and pushes updates |
-| `/dev-agent review` | Reviews a colleague's PR and posts structured feedback |
-| `/dev-agent follow-up` | Posts a Slack nudge to a PR review thread |
-| `/dev-agent config` | View, edit, reset, or validate project config |
+| Command | Arguments | What it does |
+|---|---|---|
+| `/dev-agent audit` | _(none)_ | Scans the full codebase for risks and architectural issues, then offers to create Jira tickets for findings |
+| `/dev-agent fix` | `[ticket key or URL]` or `[description]` | Diagnoses a bug, applies a scoped fix, runs tests, opens a PR, and transitions the Jira ticket |
+| `/dev-agent refix` | `[ticket] [rejected PR]` | Re-diagnoses after a fix was rejected — classifies the rejection, applies a corrected fix on a new branch |
+| `/dev-agent build` | `[ticket key or URL]` or `[description]` | Generates a full feature (route → controller → serializer → specs + FE integration) from a Jira ticket |
+| `/dev-agent sweep` | _(none)_ | Pulls all open assigned tickets from Jira and processes each end-to-end; supports resume from checkpoint |
+| `/dev-agent verify` | `[ticket] [PR]` | Pre-merge root cause check — independently traces the code path and compares it against the PR diff |
+| `/dev-agent respond` | `[your PR]` | Addresses all open review comments, pushes updates, waits for CI, then re-requests review |
+| `/dev-agent review` | `[colleague's PR]` | Reviews a colleague's PR — leaves inline comments, submits verdict, notifies author on Slack |
+| `/dev-agent follow-up` | `[PR]` or _(none for all)_ | Posts a Slack nudge to the existing thread for one PR or all your open unapproved PRs |
+| `/dev-agent config` | _(see below)_ | View, edit, reset, or validate project config |
 
 ## Requirements
 
@@ -54,7 +54,7 @@ git add .claude/dev-agent.json && git commit -m "chore: add dev-agent config"
 |---|---|---|
 | `repo` | GitHub repo in `owner/repo` format | `C-FO/baberu` |
 | `jira_domain` | Jira hostname, no protocol | `your-org.atlassian.net` |
-| `jira_project` | Jira project key | `HQA` |
+| `jira_project` | One or more Jira project keys, comma-separated (spaces around commas are fine) | `HQA` or `MULTI, HQA` |
 | `slack_channel` | Slack channel for PR notifications (no `#`) | `team-dev` |
 | `slack_group` | Slack group handle for review nudges (no `@`) | `team-eng` |
 | `pr_reviewer_team` | GitHub team slug for PR reviewers | `dev-agent` |
