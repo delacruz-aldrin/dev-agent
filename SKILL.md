@@ -48,7 +48,7 @@ The canonical key list (used for missing-key detection and validation):
 |---|---|---|
 | `repo` | `owner/repo` — must contain exactly one `/` | `C-FO/baberu` |
 | `jira_domain` | hostname only, no protocol | `your-org.atlassian.net` |
-| `jira_project` | one or more uppercase alphanumeric keys, comma-separated, no spaces | `MULTI` or `MULTI,HQA` |
+| `jira_project` | one or more uppercase alphanumeric keys, comma-separated (spaces around commas are accepted and stripped on save) | `MULTI` or `MULTI, HQA` |
 | `slack_channel` | no `#` prefix | `team-dev-agent` |
 | `slack_group` | handle, no `@` | `likha-dev-agent-eng` |
 | `pr_reviewer_team` | GitHub team slug | `dev-agent` |
@@ -78,7 +78,7 @@ Show which keys need values (all for first run, or only the missing ones for par
 After all values are collected, validate each:
 - `repo`: must match `[^/]+/[^/]+` (exactly one `/`)
 - `jira_domain`: must not contain `://` or spaces
-- `jira_project`: each comma-separated token must be uppercase letters and digits only (e.g. `MULTI` or `MULTI,HQA`)
+- `jira_project`: split on `,`, trim whitespace from each token — each token must be uppercase letters and digits only. Normalize before writing: re-join tokens with `,` (no spaces), so `"MULTI, HQA"` is stored as `"MULTI,HQA"`.
 - `slack_channel`, `slack_group`, `pr_reviewer_team`, `pr_milestone`: must be non-empty strings
 
 If any validation fails: show the specific error and re-prompt that field only. Do not re-ask fields that passed.
