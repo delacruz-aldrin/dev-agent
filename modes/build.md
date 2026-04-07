@@ -96,8 +96,7 @@ Sample silently:
    git commit -m "feat: [short description]"
    git push origin HEAD
    ```
-10. Create PR: `/pr {ticket link or 'no ticket'}`
-    - Verify labels (`ai-contribution-level:3`), milestone (`{pr_milestone}`), reviewer (`{pr_reviewer_team}`) — apply missing via `gh api`
+10. Run **Shared: Create PR** with `TICKET_KEY` (or `none` if manual). Pass the Jira ticket URL as the ticket link.
 11. Transition Jira to "For Review" via Atlassian MCP — if fails: note in report and continue
 12. If standalone: run **Shared: Post Slack Thread**
 

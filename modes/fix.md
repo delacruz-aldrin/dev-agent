@@ -106,8 +106,7 @@ Symptom → focus mapping:
    git commit -m "fix: [short description]"
    git push origin HEAD
    ```
-11. Create PR: `/pr {ticket link or 'no ticket'}`
-    - Verify labels (`ai-contribution-level:3`), milestone (`{pr_milestone}`), reviewer (`{pr_reviewer_team}`) — apply missing via `gh api`
+11. Run **Shared: Create PR** with `TICKET_KEY` (or `none` if manual). Pass the Jira ticket URL as the ticket link.
 12. Transition Jira to "For Review" via Atlassian MCP — if fails: note in report and continue
 13. If standalone (not via sweep): run **Shared: Post Slack Thread**
 
