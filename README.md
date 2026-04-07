@@ -15,6 +15,8 @@ A multi-mode Claude Code skill that automates the full dev workflow — from Jir
 | `/dev-agent respond` | `[your PR]` | Addresses all open review comments, pushes updates, waits for CI, then re-requests review |
 | `/dev-agent review` | `[colleague's PR]` | Reviews a colleague's PR — leaves inline comments, submits verdict, notifies author on Slack |
 | `/dev-agent follow-up` | `[PR]` or _(none for all)_ | Posts a Slack nudge to the existing thread for one PR or all your open unapproved PRs |
+| `/dev-agent setup <url> [url2 ...]` | One or more doc URLs | Reads setup docs (Confluence or web), deduplicates steps, snapshots machine state, executes, and verifies |
+| `/dev-agent setup --rollback [id]` | Snapshot ID or _(none to list)_ | Rolls back a previous setup session — restores config files, uninstalls packages, removes created files |
 | `/dev-agent config` | _(see below)_ | View, edit, reset, or validate project config |
 
 ## Requirements
