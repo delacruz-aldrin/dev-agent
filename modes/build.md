@@ -1,5 +1,32 @@
 # Mode: build
 
+## Usage
+
+```
+/dev-agent build [Jira link or ticket key]
+/dev-agent build [manual description]
+```
+
+Generates a complete feature implementation — backend endpoint, frontend integration, specs, and PR.
+
+**With a Jira ticket** — reads the acceptance criteria, samples existing conventions, generates all layers (route → controller → usecase → serializer → specs, plus TS interfaces, API client, component), then opens a PR.
+
+**Manual** — describe the feature directly when there's no ticket.
+
+**Examples:**
+```
+/dev-agent build HQA-35223
+→ Reads ticket, samples similar controllers and components, generates full endpoint + FE integration
+
+/dev-agent build MULTI-456
+→ Same — works with any configured Jira project
+
+/dev-agent build Add a GET /api/p/nodes/:id endpoint that returns a single node with its translations
+→ Manual input — creates branch feat/manual-get-node-with-translations
+```
+
+---
+
 ## Phase 0 — Setup
 Read config. Run Backend Detection. Run Frontend Detection.
 

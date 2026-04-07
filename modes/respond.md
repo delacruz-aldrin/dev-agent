@@ -1,5 +1,32 @@
 # Mode: respond
 
+## Usage
+
+```
+/dev-agent respond [PR link or number]
+```
+
+Addresses all open review comments on your PR — applies valid changes, replies to invalid ones, re-runs tests, pushes, waits for CI, then re-requests review.
+
+**Only works on PRs you authored.** Will hard-block if the PR belongs to someone else (use `review` for that).
+
+**Examples:**
+```
+/dev-agent respond 519
+→ Fetches unresolved threads on PR #519, applies valid suggestions, replies to the rest,
+  pushes, polls CI for up to 15 min, then re-requests review from human reviewers
+
+/dev-agent respond https://github.com/C-FO/baberu/pull/519
+→ Same via full URL
+```
+
+**Typical flow after getting review comments:**
+1. Reviewer leaves inline comments on your PR
+2. Run `/dev-agent respond 519`
+3. dev-agent handles all threads, pushes a new commit, and pings reviewers when CI is green
+
+---
+
 ## Phase 0 — Setup + Ownership Check
 Read config. Run Backend Detection. Run Frontend Detection.
 

@@ -1,5 +1,23 @@
 # Mode: audit
 
+## Usage
+
+```
+/dev-agent audit
+```
+
+Scans the full codebase, surfaces risks and architectural issues, and optionally creates Jira tickets for each finding.
+
+**No arguments needed.** Reads repo structure automatically. At the end, asks which findings to file as tickets, who to assign, and which Jira project to target.
+
+**Examples:**
+```
+/dev-agent audit
+→ Produces an Audit Report across BE and FE, then offers to create tickets for 🔴 and 🟡 findings
+```
+
+---
+
 ## Phase 0 — Recon
 Read config. Run Backend Detection. Run Frontend Detection.
 

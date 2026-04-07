@@ -1,5 +1,31 @@
 # Mode: sweep
 
+## Usage
+
+```
+/dev-agent sweep
+```
+
+Pulls all open tickets assigned to you from Jira, lets you set priority order, then processes each one end-to-end — branch, fix or build, tests, PR, Jira transition, and Slack notification — sequentially.
+
+**No arguments.** Automatically queries `{jira_project}` for your assigned open tickets. Supports resuming from a checkpoint if interrupted mid-sweep.
+
+**Examples:**
+```
+/dev-agent sweep
+→ Finds 4 open tickets assigned to you, presents them grouped by type (bugs first),
+  waits for your priority order, then processes each one fully before moving to the next
+
+/dev-agent sweep   ← after an interrupted sweep
+→ Detects .claude/sweep-checkpoint.json, shows completed tickets, asks to resume or start fresh
+```
+
+**When to use vs fix/build:**
+- Use `sweep` for a batch of tickets at once (end-of-sprint, clearing backlog)
+- Use `fix` or `build` for a single ticket when you want to stay hands-on
+
+---
+
 ## Phase 0 — Setup + Board Scan
 Read config. Run Backend Detection. Run Frontend Detection.
 

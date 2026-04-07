@@ -1,5 +1,32 @@
 # Mode: fix
 
+## Usage
+
+```
+/dev-agent fix [Jira link or ticket key]
+/dev-agent fix [manual description]
+```
+
+Diagnoses a bug and opens a PR with the fix, specs, and Slack notification.
+
+**With a Jira ticket** — fetches the ticket, traces the affected code path, fixes the root cause, runs tests, opens a PR, and transitions the ticket to "For Review".
+
+**Manual** — use a plain description when there's no ticket yet.
+
+**Examples:**
+```
+/dev-agent fix HQA-37771
+→ Fetches ticket, traces controller → usecase → model, applies scoped fix, opens PR
+
+/dev-agent fix https://jira-freee.atlassian.net/browse/HQA-37771
+→ Same as above via full URL
+
+/dev-agent fix The page list table has wrong column widths when there are no pages
+→ Manual input — creates branch fix/manual-page-list-column-widths
+```
+
+---
+
 ## Phase 0 — Setup
 Read config. Run Backend Detection. Run Frontend Detection.
 

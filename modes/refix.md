@@ -1,5 +1,29 @@
 # Mode: refix
 
+## Usage
+
+```
+/dev-agent refix [Jira link or ticket key] [rejected PR link or number]
+```
+
+Re-diagnoses a bug after a fix was rejected or reverted, then opens a corrected PR.
+
+**Both arguments are required.** Fetches the rejected PR diff and reviewer comments, classifies the rejection reason (`wrong_root_cause` or `side_effects`), and applies a corrected fix on a new branch with an incremented suffix (e.g. `bug/HQA-12345-2`).
+
+**Examples:**
+```
+/dev-agent refix HQA-37771 501
+→ Fetches PR #501 diff + review comments, re-diagnoses, opens bug/HQA-37771-2
+
+/dev-agent refix HQA-37771 https://github.com/C-FO/baberu/pull/501
+→ Same via full PR URL
+
+/dev-agent refix MULTI-456 498
+→ Works with any configured project key
+```
+
+---
+
 ## Phase 0 — Setup
 Read config. Run Backend Detection. Run Frontend Detection.
 

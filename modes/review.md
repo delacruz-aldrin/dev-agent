@@ -1,5 +1,31 @@
 # Mode: review
 
+## Usage
+
+```
+/dev-agent review [PR link or number]
+```
+
+Reviews a colleague's PR — checks requirements coverage, logic, test coverage, BE/FE contract, and conventions. Leaves inline GitHub comments, submits a formal review verdict (APPROVE / REQUEST_CHANGES / COMMENT), and posts to Slack with a mention to the PR author.
+
+**Only works on PRs you did NOT author.** Will redirect you to `respond` if it's your own PR.
+
+Automatically detects whether this is a first review or a follow-up review based on prior comments.
+
+**Examples:**
+```
+/dev-agent review 518
+→ First review: reads diff + linked Jira ticket, leaves inline comments, submits verdict, notifies author on Slack
+
+/dev-agent review 518   ← run again after author pushes updates
+→ Follow-up mode: re-assesses only threads that were updated since the last review
+
+/dev-agent review https://github.com/C-FO/baberu/pull/518
+→ Same via full URL
+```
+
+---
+
 ## Phase 0 — Setup + Ownership Check
 Read config.
 

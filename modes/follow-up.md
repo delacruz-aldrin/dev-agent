@@ -1,5 +1,35 @@
 # Mode: follow-up
 
+## Usage
+
+```
+/dev-agent follow-up [PR link or number]   ← nudge for one PR
+/dev-agent follow-up                       ← nudge for ALL your open unapproved PRs
+```
+
+Posts a review nudge to the existing Slack thread for your PR(s). Finds the thread by searching for the PR URL — never creates a new top-level message if a thread already exists. Each nudge uses a completely different angle from previous ones in the same thread.
+
+**Slack only — never touches GitHub or code.**
+
+**Examples:**
+```
+/dev-agent follow-up 519
+→ Finds the Slack thread for PR #519, posts a warm nudge mentioning @team-reviewers
+
+/dev-agent follow-up
+→ Finds all your open PRs without approval, posts a nudge to each thread
+
+/dev-agent follow-up https://github.com/C-FO/baberu/pull/519
+→ Same as the first example via full URL
+```
+
+**When to use:**
+- PR has been open for a day or two without a review
+- After pushing updates and wanting to re-ping without being annoying
+- End of sprint to clear the review queue
+
+---
+
 ## THIS MODE IS SLACK ONLY
 Does NOT read/post GitHub comments, run tests, modify files, run git commands, or touch code. If doing any of these — STOP, wrong mode.
 

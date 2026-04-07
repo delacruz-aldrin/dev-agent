@@ -1,5 +1,34 @@
 # Mode: verify
 
+## Usage
+
+```
+/dev-agent verify [Jira link or ticket key] [PR link or number]
+```
+
+Pre-merge root cause check. Independently traces the affected code path in the live codebase and compares it against what the PR actually changed — surfaces gaps, missing specs, BE/FE contract mismatches, and new risks.
+
+**Both arguments required.** Does not modify any files or post GitHub comments — read-only analysis only.
+
+**Examples:**
+```
+/dev-agent verify HQA-37771 519
+→ Fetches ticket + PR #519 diff, traces the endpoint independently, reports verdict with blocking/non-blocking findings
+
+/dev-agent verify HQA-37771 https://github.com/C-FO/baberu/pull/519
+→ Same via full URL
+
+/dev-agent verify MULTI-456 502
+→ Works across any configured project
+```
+
+**When to use:**
+- Before merging a PR you're not sure about
+- After a refix to confirm the corrected diagnosis actually holds
+- As a second opinion on a PR that looks right but feels off
+
+---
+
 ## Phase 0 — Setup
 Read config. Accept `/dev-agent verify [Jira link] [PR link]`.
 
