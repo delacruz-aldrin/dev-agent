@@ -1,6 +1,6 @@
 ---
 name: dev-agent
-description: Nine-mode dev agent + config utility. Modes: audit (codebase assessment), fix (bug diagnosis+fix), refix (re-diagnose and fix a rejected/reverted deployment), build (generate endpoints), verify (PR root cause check), sweep (autonomous Jira→PR pipeline), respond (address PR comments), review (review colleague PRs), follow-up (Slack nudge for PR review). Use "dev-agent config" to view, edit, or reset project config. Always reads settings from .claude/dev-agent.json.
+description: Ten-mode dev agent + config utility. Modes: audit (codebase assessment), fix (bug diagnosis+fix), refix (re-diagnose and fix a rejected/reverted deployment), build (generate endpoints), verify (PR root cause check), sweep (autonomous Jira→PR pipeline), respond (address PR comments), review (review colleague PRs), follow-up (Slack nudge for PR review), setup (follow setup docs and configure local environment with rollback support). Use "dev-agent config" to view, edit, or reset project config. Always reads settings from .claude/dev-agent.json.
 ---
 
 # Dev-Agent
@@ -20,6 +20,8 @@ On invocation, read the corresponding file from `~/.claude/skills/dev-agent/mode
 | `/dev-agent respond` | `modes/respond.md` |
 | `/dev-agent review` | `modes/review.md` |
 | `/dev-agent follow-up` | `modes/follow-up.md` |
+| `/dev-agent setup <url> [url2 ...]` | `modes/setup.md` |
+| `/dev-agent setup --rollback [id]` | `modes/setup.md` |
 | `/dev-agent config` | See **Utility: Config** below |
 
 ---

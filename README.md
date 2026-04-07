@@ -28,11 +28,37 @@ A multi-mode Claude Code skill that automates the full dev workflow — from Jir
 
 ## Install
 
+### Option 1 — Script (recommended)
+
+The install script prompts you to choose between a global install (available in all projects) or a project-local install (this project only):
+
+```sh
+bash <(curl -fsSL https://raw.githubusercontent.com/delacruz-aldrin/dev-agent/main/install.sh)
+```
+
+Or if you've already cloned the repo:
+
+```sh
+bash ~/.claude/skills/dev-agent/install.sh
+```
+
+### Option 2 — Manual
+
+**Global** (available in all Claude Code projects):
+
 ```sh
 git clone https://github.com/delacruz-aldrin/dev-agent.git ~/.claude/skills/dev-agent
 ```
 
-That's it. The skill is picked up automatically by Claude Code on next launch.
+**Project-local** (this project only — run from the project root):
+
+```sh
+git clone https://github.com/delacruz-aldrin/dev-agent.git .claude/skills/dev-agent
+# Optionally exclude from git:
+echo '.claude/skills/' >> .gitignore
+```
+
+Restart Claude Code after installing. The skill is picked up automatically on next launch.
 
 ## Update
 
