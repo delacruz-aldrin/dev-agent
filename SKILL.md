@@ -22,6 +22,7 @@ On invocation, read the corresponding file from `~/.claude/skills/dev-agent/mode
 | `/dev-agent follow-up` | `modes/follow-up.md` |
 | `/dev-agent setup <url> [url2 ...]` | `modes/setup.md` |
 | `/dev-agent setup --rollback [id]` | `modes/setup.md` |
+| `/dev-agent pr [ticket key or URL]` | `modes/pr.md` |
 | `/dev-agent config` | See **Utility: Config** below |
 
 ---
@@ -211,6 +212,88 @@ Used in fix, build, respond. Run after all code changes.
      - Still failing → manually fix → re-run
      - Still failing → revert all changes, note in report, stop
 2. If `FE_LINT≠none`: run `{FE_LINT_FIX}` → then `{FE_LINT_CHECK}` to confirm clean
+
+---
+
+## Shared: Create PR
+
+Used in fix, build, refix, pr. Creates a PR for the current branch using the project's PR template.
+
+### Step 1 — Read PR Template
+Check for a PR template in order:
+- `.github/PULL_REQUEST_TEMPLATE.md`
+- `.github/PULL_REQUEST_TEMPLATE`
+- `.github/pull_request_template.md`
+
+If found: read it and use its exact section structure. If not found: use this default:
+```
+## Summary
+
+## Test Cases
+- [ ]
+
+## Out of Scope
+```
+
+### Step 2 — Fill Template
+Infer values from commits and diff:
+- **Tickets** — include if passed in (e.g. Jira link from the invoking mode). Leave blank if none.
+- **Summary** — what changed and why, inferred from commits + diff.
+- **Out of Scope** — what was intentionally not changed.
+- **Test Cases** — checklist (`- [ ]`) of steps a reviewer can follow to verify.
+- **AI Prompt** — include if the section exists in the template.
+
+### Step 3 — Create PR
+Push branch if not already pushed:
+```bash
+git push -u origin HEAD
+```
+
+Create via REST API:
+```bash
+gh api repos/{REPO}/pulls -X POST \
+  -f title="<title>" \
+  -f head="<branch>" \
+  -f base="main" \
+  -f body="<filled template>" \
+  --jq '.number, .html_url'
+```
+
+Store PR number as `PR_NUMBER`, URL as `PR_URL`.
+
+### Step 4 — Apply Metadata
+**Labels** — always apply `ai-contribution-level:3` plus one productivity label:
+
+| Change type | Label |
+|---|---|
+| New feature or user-facing functionality | `1.Feature development` |
+| Bug fix, dependency update, maintenance | `2.Bugfix & Maintenance` |
+| Infrastructure, platform work | `3.Tech investment` |
+| Tests, refactoring, code quality | `4.Quality improvement` |
+| Everything else (deploys, tooling, config) | `5.Others` |
+
+```bash
+gh api repos/{REPO}/issues/{PR_NUMBER}/labels -X POST \
+  -f "labels[]=<productivity-label>" \
+  -f "labels[]=ai-contribution-level:3"
+```
+
+**Reviewer team:**
+```bash
+gh api repos/{REPO}/pulls/{PR_NUMBER}/requested_reviewers -X POST --input - <<'EOF'
+{"team_reviewers": ["{pr_reviewer_team}"]}
+EOF
+```
+
+**Milestone** — look up ID then set:
+```bash
+MILESTONE_ID=$(gh api repos/{REPO}/milestones --jq '.[] | select(.title=="{pr_milestone}") | .number')
+gh api repos/{REPO}/issues/{PR_NUMBER} -X PATCH --input - <<EOF
+{"milestone": $MILESTONE_ID}
+EOF
+```
+
+If any metadata step fails: note in report and continue — do not abort.
 
 ---
 

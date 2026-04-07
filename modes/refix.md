@@ -148,13 +148,12 @@ Do not re-diagnose the original bug — the core fix is correct. Instead, isolat
 
 ## Phase 4 — Report & PR
 
-1. Create PR: `/pr {ticket link or 'no ticket'}`
-   - PR description **must include**:
-     - Link to the rejected PR: "Supersedes #{rejected_pr_number}"
+1. Run **Shared: Create PR** with `TICKET_KEY`. Pass the Jira ticket URL as the ticket link.
+   - The filled PR body **must also include** (append after the template sections):
+     - "Supersedes #{rejected_pr_number}"
      - If `REJECTION_TYPE=wrong_root_cause`: a "Why the previous fix was wrong" section explaining the misdiagnosis
      - If `REJECTION_TYPE=side_effects`: a "What the side effects were and how they were addressed" section, confirming the core fix is unchanged
      - Updated test cases checklist covering the rejection scenario
-   - Verify labels (`ai-contribution-level:3`), milestone (`{pr_milestone}`), reviewer (`{pr_reviewer_team}`) — apply missing via `gh api`
 2. Transition Jira back to "For Review" via Atlassian MCP — if fails: note in report and continue
 3. Run **Shared: Post Slack Thread**
 
