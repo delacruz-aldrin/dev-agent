@@ -4,11 +4,14 @@
 
 ```
 /dev-agent sweep
+/dev-agent sweep --manual "description 1, description 2, ..."
 ```
 
 Pulls all open tickets assigned to you from Jira, lets you set priority order, then processes each one end-to-end — branch, fix or build, tests, PR, Jira transition, and Slack notification — sequentially.
 
-**No arguments.** Automatically queries `{jira_project}` for your assigned open tickets. Supports resuming from a checkpoint if interrupted mid-sweep.
+**No arguments** — automatically queries `{jira_project}` for your assigned open tickets. Supports resuming from a checkpoint if interrupted mid-sweep.
+
+**`--manual`** — skip Jira entirely and process a comma-separated list of descriptions instead. Each item is treated as a manual input (equivalent to `/dev-agent fix "description"` or `/dev-agent build "description"`). No Jira transitions or ticket deduplication. Use this when tickets don't exist yet or you're working outside Jira.
 
 **Examples:**
 ```
@@ -28,6 +31,8 @@ Pulls all open tickets assigned to you from Jira, lets you set priority order, t
 
 ## Phase 0 — Setup + Board Scan
 Read config. Run Backend Detection. Run Frontend Detection.
+
+Detect `--manual` flag. If present: parse the comma-separated descriptions into a `MANUAL_ITEMS` list, skip the checkpoint and Jira query steps, and jump directly to Phase 1 using `MANUAL_ITEMS` as the ticket list. Each item has `TICKET_KEY=none` and is routed to fix or build based on description keywords (verbs like "fix", "bug", "broken" → fix mode; all others → build mode).
 
 Switch to main:
 ```bash

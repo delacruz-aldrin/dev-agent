@@ -57,6 +57,12 @@ Filter out already-approved PRs. Process each sequentially.
 ## Phase 1 — Status Check
 Skip if merged, closed, or already approved.
 
+For each qualifying PR, fetch staleness data from the PR API response:
+- `days_open` — days since `created_at`
+- `days_since_activity` — days since `updated_at`
+
+Store both for use in the composed message.
+
 ## Phase 2 — Find or Create Slack Thread
 Using Slack MCP only. Search `#{slack_channel}` in order — stop at first match:
 1. Search query: `https://github.com/{REPO}/pull/{pr_number}` — try both raw and `<https://...>` wrapped forms
@@ -79,6 +85,7 @@ Read existing thread messages. Write a reply:
 - Completely different angle from any previous nudge in this thread
 - Mentions `<!subteam^GROUP_ID>` — look up `{slack_group}` via Slack MCP
 - Warm, humorous, 2–4 sentences
+- Weave in staleness naturally — e.g. "it's been {days_open} days" or "last activity was {days_since_activity} days ago" — but only if it adds to the message, not as a standalone data dump
 - Never: "just following up", "circling back", "as per my last", "As an AI"
 
 Send via Slack MCP. Reply in thread using `thread_ts`. Send immediately — no confirmation. Never create a new top-level message if a thread already exists. Never touch GitHub.

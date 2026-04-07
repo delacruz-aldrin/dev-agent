@@ -4,11 +4,12 @@
 
 ```
 /dev-agent verify [Jira link or ticket key] [PR link or number]
+/dev-agent verify [Jira link or ticket key] [PR link or number] --comment
 ```
 
 Pre-merge root cause check. Independently traces the affected code path in the live codebase and compares it against what the PR actually changed — surfaces gaps, missing specs, BE/FE contract mismatches, and new risks.
 
-**Both arguments required.** Does not modify any files or post GitHub comments — read-only analysis only.
+**Both arguments required.** By default, read-only — does not modify files or post GitHub comments. Pass `--comment` to post the findings as a GitHub COMMENT review on the PR instead of just printing.
 
 **Examples:**
 ```
@@ -30,7 +31,7 @@ Pre-merge root cause check. Independently traces the affected code path in the l
 ---
 
 ## Phase 0 — Setup
-Read config. Accept `/dev-agent verify [Jira link] [PR link]`.
+Read config. Accept `/dev-agent verify [Jira link] [PR link] [--comment]`. Detect `--comment` flag — store as `POST_COMMENT=true` or `false`.
 
 - Fetch Jira ticket via Atlassian MCP (cloudId = `{jira_domain}`)
 - Fetch PR + diff: `gh api repos/{REPO}/pulls/{pr_number}` and `.../files`
@@ -78,3 +79,11 @@ Classify each finding before including it in the report:
 | # | Severity | File | Finding |
 |---|----------|------|---------|
 ```
+
+If `POST_COMMENT=true`: post the full report body as a COMMENT review via:
+```bash
+gh api repos/{REPO}/pulls/{pr_number}/reviews -X POST \
+  -f event="COMMENT" \
+  -f body="<verify report markdown>"
+```
+Note the posted review URL in the report.
