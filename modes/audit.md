@@ -43,10 +43,10 @@ Read silently based on `BE_FRAMEWORK`:
 Show all 🔴 and 🟡 findings numbered. Ask:
 1. "Which findings to create as Jira tickets? Reply with numbers or 'all'."
 2. "Assign to you or leave unassigned? Reply 'me' or 'unassigned'."
-3. "I'll create tickets in {jira_project}. Correct? Reply 'yes' or provide a different key."
+3. If `{jira_project}` contains multiple keys (e.g. `MULTI,HQA`): "Which project should I create tickets in? ({jira_project})" — wait for a single key. If single key: "I'll create tickets in {jira_project}. Correct? Reply 'yes' or provide a different key." Store the chosen key as `TARGET_PROJECT`.
 
 **Deduplication check:** Before creating each ticket, search Jira via Atlassian MCP:
-`project = {jira_project} AND summary ~ "{short finding summary}" AND resolution = Unresolved`
+`project = {TARGET_PROJECT} AND summary ~ "{short finding summary}" AND resolution = Unresolved`
 If a matching open ticket is found: skip creation, note the existing ticket key in the report under **Already Tracked** instead.
 
 Create each (not already tracked) via Atlassian MCP (cloudId = `{jira_domain}`):

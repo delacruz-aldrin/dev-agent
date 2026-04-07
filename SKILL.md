@@ -33,7 +33,7 @@ On invocation, read the corresponding file from `~/.claude/skills/dev-agent/mode
 {
   "repo": "owner/repo",
   "jira_domain": "your-org.atlassian.net",
-  "jira_project": "MULTI",
+  "jira_project": "MULTI,HQA",
   "slack_channel": "team-dev-agent",
   "slack_group": "likha-dev-agent-eng",
   "pr_reviewer_team": "dev-agent",
@@ -48,11 +48,19 @@ The canonical key list (used for missing-key detection and validation):
 |---|---|---|
 | `repo` | `owner/repo` — must contain exactly one `/` | `C-FO/baberu` |
 | `jira_domain` | hostname only, no protocol | `your-org.atlassian.net` |
-| `jira_project` | uppercase alphanumeric | `MULTI` |
+| `jira_project` | one or more uppercase alphanumeric keys, comma-separated, no spaces | `MULTI` or `MULTI,HQA` |
 | `slack_channel` | no `#` prefix | `team-dev-agent` |
 | `slack_group` | handle, no `@` | `likha-dev-agent-eng` |
 | `pr_reviewer_team` | GitHub team slug | `dev-agent` |
 | `pr_milestone` | exact milestone name | `Untracked` |
+
+### JQL Project Expansion
+Whenever a mode builds a JQL query using `{jira_project}`, always expand it first:
+- Parse `jira_project` by splitting on `,` and trimming whitespace → `JIRA_PROJECTS` array
+- Single entry → use `project = KEY`
+- Multiple entries → use `project in (KEY1, KEY2)`
+
+Never interpolate `{jira_project}` raw into JQL.
 
 ### First Run Detection
 At Phase 0 of every mode: read `.claude/dev-agent.json` if it exists. Diff its keys against the Known Config Keys list.
@@ -70,7 +78,7 @@ Show which keys need values (all for first run, or only the missing ones for par
 After all values are collected, validate each:
 - `repo`: must match `[^/]+/[^/]+` (exactly one `/`)
 - `jira_domain`: must not contain `://` or spaces
-- `jira_project`: must be uppercase letters and digits only
+- `jira_project`: each comma-separated token must be uppercase letters and digits only (e.g. `MULTI` or `MULTI,HQA`)
 - `slack_channel`, `slack_group`, `pr_reviewer_team`, `pr_milestone`: must be non-empty strings
 
 If any validation fails: show the specific error and re-prompt that field only. Do not re-ask fields that passed.
@@ -235,7 +243,7 @@ Used in fix, build, sweep. If Slack MCP fails: note in report and continue.
 
 **Validate:** Test each integration with a lightweight read-only call:
 - GitHub: `gh api repos/{REPO}` — expect 200
-- Jira: fetch project details via Atlassian MCP using `{jira_domain}` and `{jira_project}` — expect success
+- Jira: for each project key in `{jira_project}` (split on `,`), fetch project details via Atlassian MCP using `{jira_domain}` — expect success for each
 - Slack: look up `{slack_channel}` via Slack MCP — expect channel found
 
 Report pass/fail per integration:

@@ -17,11 +17,11 @@ If checkout fails (uncommitted changes), stop:
 - If 'yes': skip already-completed tickets in Phase 2. If 'no': delete the file and start fresh.
 - If no file: create it as `{ "completed": [] }` before processing begins. Also ensure `.claude/sweep-checkpoint.json` is listed in `.gitignore` — if not, append it silently.
 
-Query tickets via Atlassian MCP (cloudId = `{jira_domain}`). Try JQL in order until results:
-1. `project = {jira_project} AND assignee = currentUser() AND status in ("To Do", "In Progress") AND issuetype in (Bug, Story, Task, Improvement, Sub-task)`
-2. `project = {jira_project} AND assignee = currentUser() AND status in ("To Do", "In Progress")`
-3. `project = {jira_project} AND assignee = currentUser() AND statusCategory in ("To Do", "In Progress")`
-4. `project = {jira_project} AND assignee = currentUser() AND resolution = Unresolved`
+Query tickets via Atlassian MCP (cloudId = `{jira_domain}`). Expand `{jira_project}` using JQL Project Expansion from SKILL.md (e.g. `MULTI,HQA` → `project in (MULTI, HQA)`). Try JQL in order until results:
+1. `{project_clause} AND assignee = currentUser() AND status in ("To Do", "In Progress") AND issuetype in (Bug, Story, Task, Improvement, Sub-task)`
+2. `{project_clause} AND assignee = currentUser() AND status in ("To Do", "In Progress")`
+3. `{project_clause} AND assignee = currentUser() AND statusCategory in ("To Do", "In Progress")`
+4. `{project_clause} AND assignee = currentUser() AND resolution = Unresolved`
 
 If all four return zero:
 ```
