@@ -15,9 +15,9 @@ An eleven-mode Claude Code skill that automates the full dev workflow — from J
 | `/dev-agent respond` | `[your PR]` | Addresses all open review comments, pushes updates, waits for CI, then re-requests review |
 | `/dev-agent review` | `[colleague's PR]` | Reviews a colleague's PR — leaves inline comments, submits verdict, notifies author on Slack |
 | `/dev-agent follow-up` | `[PR]` or _(none for all)_ | Posts a Slack nudge to the existing thread for one PR or all your open unapproved PRs |
-| `/dev-agent setup <url> [url2 ...]` | One or more doc URLs | Reads setup docs (Confluence or web), deduplicates steps, snapshots machine state, executes, and verifies |
+| `/dev-agent setup <url> [url2 ...]` | Confluence, Jira, or any web URL | Reads setup docs, deduplicates steps, snapshots machine state, executes, and verifies |
 | `/dev-agent setup --rollback [id]` | Snapshot ID or _(none to list)_ | Rolls back a previous setup session — restores config files, uninstalls brew/npm/pip packages, removes created files |
-| `/dev-agent setup --diff <id1> <id2>` | Two snapshot IDs | Compares two setup snapshots side by side — shows added/removed packages and config file changes between sessions |
+| `/dev-agent setup --diff <id1> <id2>` | Two snapshot IDs to compare | Compares two setup snapshots side by side — shows added/removed packages and config file changes between sessions |
 | `/dev-agent pr` | `[ticket key or URL]` or _(none)_ or `--draft` | Opens a PR for the current branch using the project's PR template — labels, milestone, and reviewer applied automatically. Pass `--draft` to open as a draft. |
 | `/dev-agent config` | _(see below)_ | View, edit, reset, or validate project config |
 
