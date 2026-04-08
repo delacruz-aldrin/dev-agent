@@ -1,6 +1,6 @@
 # dev-agent
 
-An eleven-mode Claude Code skill that automates the full dev workflow — from Jira triage to PR merge.
+A twelve-mode Claude Code skill that automates the full dev workflow — from Jira triage to PR merge.
 
 ## Modes
 
@@ -19,6 +19,7 @@ An eleven-mode Claude Code skill that automates the full dev workflow — from J
 | `/dev-agent setup --rollback [id]` | Snapshot ID or _(none to list)_ | Rolls back a previous setup session — restores config files, uninstalls brew/npm/pip packages, removes created files |
 | `/dev-agent setup --diff <id1> <id2>` | Two snapshot IDs to compare | Compares two setup snapshots side by side — shows added/removed packages and config file changes between sessions |
 | `/dev-agent pr` | `[ticket key or URL]` or _(none)_ or `--draft` | Opens a PR for the current branch using the project's PR template — labels, milestone, and reviewer applied automatically. Pass `--draft` to open as a draft. |
+| `/dev-agent refactor` | _(IDE selection)_ or `[file]` or `[file:start-end]` or `"[description]"` or `--from-audit <n>` | Restructures code without changing behavior — coverage gate before touching anything, plan shown for approval, full test suite after, PR with quality label. |
 | `/dev-agent config` | _(see below)_ | View, edit, reset, or validate project config |
 
 ## Mode Chains
@@ -34,6 +35,8 @@ Natural workflows — what to run next:
 | Reviewer needs a nudge | `follow-up` |
 | Batch of tickets (end-of-sprint) | `sweep` |
 | Code smells / tech debt surface | `audit` |
+| Audit finding needs structural cleanup | `audit` → `refactor --from-audit <n>` |
+| Inline refactor (file, lines, or IDE selection) | `refactor <target>` |
 | Review a colleague's PR | `review` |
 | Manual code work done, need a PR | `pr` |
 | New machine / environment setup | `setup <url>` |

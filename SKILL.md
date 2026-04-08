@@ -1,6 +1,6 @@
 ---
 name: dev-agent
-description: Eleven-mode dev agent + config utility. Modes: audit (codebase assessment), fix (bug diagnosis+fix), refix (re-diagnose and fix a rejected/reverted deployment), build (generate endpoints), verify (PR root cause check), sweep (autonomous Jira→PR pipeline), respond (address PR comments), review (review colleague PRs), follow-up (Slack nudge for PR review), setup (follow setup docs and configure local environment with rollback support), pr (open a PR for the current branch). Use "dev-agent config" to view, edit, or reset project config. Always reads settings from .claude/dev-agent.json.
+description: Twelve-mode dev agent + config utility. Modes: audit (codebase assessment), fix (bug diagnosis+fix), refix (re-diagnose and fix a rejected/reverted deployment), build (generate endpoints), verify (PR root cause check), sweep (autonomous Jira→PR pipeline), respond (address PR comments), review (review colleague PRs), follow-up (Slack nudge for PR review), setup (follow setup docs and configure local environment with rollback support), pr (open a PR for the current branch), refactor (restructure code without changing behavior — accepts file, line range, description, IDE selection, or audit finding). Use "dev-agent config" to view, edit, or reset project config. Always reads settings from .claude/dev-agent.json.
 ---
 
 # Dev-Agent
@@ -23,6 +23,11 @@ On invocation, read the corresponding file from `~/.claude/skills/dev-agent/mode
 | `/dev-agent setup <url> [url2 ...]` | `modes/setup.md` |
 | `/dev-agent setup --rollback [id]` | `modes/setup.md` |
 | `/dev-agent pr [ticket key or URL]` | `modes/pr.md` |
+| `/dev-agent refactor` | `modes/refactor.md` |
+| `/dev-agent refactor <file>` | `modes/refactor.md` |
+| `/dev-agent refactor <file>:<start>-<end>` | `modes/refactor.md` |
+| `/dev-agent refactor "<description>"` | `modes/refactor.md` |
+| `/dev-agent refactor --from-audit <n>` | `modes/refactor.md` |
 | `/dev-agent config` | See **Utility: Config** below |
 
 ---
@@ -40,6 +45,8 @@ Natural workflows across modes — use these as a guide for what to run next:
 | Reviewer needs a nudge | `follow-up` → posts to existing Slack thread |
 | Batch of tickets (end-of-sprint) | `sweep` → processes all assigned tickets sequentially |
 | Code smells / tech debt found | `audit` → surfaces risks, optionally files Jira tickets |
+| Audit finding needs structural cleanup | `audit` → `refactor --from-audit <n>` → PR |
+| Inline refactor request (file, lines, or selection) | `refactor <target>` → PR |
 | Review a colleague's PR | `review` → inline comments + verdict + Slack mention |
 | Manual code work done, need a PR | `pr` → opens PR for current branch |
 | New machine / environment setup | `setup <url>` → follows docs, snapshots state, supports rollback |
