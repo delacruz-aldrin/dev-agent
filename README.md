@@ -6,15 +6,15 @@ An eleven-mode Claude Code skill that automates the full dev workflow — from J
 
 | Command | Arguments | What it does |
 |---|---|---|
-| `/dev-agent audit` | _(none)_ | Scans the full codebase for risks and architectural issues, then offers to create Jira tickets for findings |
-| `/dev-agent fix` | `[ticket key or URL]` or `[description]` | Diagnoses a bug, applies a scoped fix, runs tests, opens a PR, and transitions the Jira ticket |
-| `/dev-agent refix` | `[ticket] [rejected PR]` | Re-diagnoses after a fix was rejected — classifies the rejection, applies a corrected fix on a new branch |
-| `/dev-agent build` | `[ticket key or URL]` or `[description]` | Generates a full feature (route → controller → serializer → specs + FE integration) from a Jira ticket |
-| `/dev-agent sweep` | _(none)_ or `--manual "desc1, desc2"` | Pulls all open assigned tickets from Jira and processes each end-to-end; supports resume from checkpoint. Use `--manual` to process a comma-separated list of descriptions without Jira. |
-| `/dev-agent verify` | `[ticket] [PR]` or `[ticket] [PR] --comment` | Pre-merge root cause check — independently traces the code path and compares it against the PR diff. Add `--comment` to post findings as a GitHub review. |
-| `/dev-agent respond` | `[your PR]` | Addresses all open review comments, pushes updates, waits for CI, then re-requests review |
-| `/dev-agent review` | `[colleague's PR]` | Reviews a colleague's PR — leaves inline comments, submits verdict, notifies author on Slack |
-| `/dev-agent follow-up` | `[PR]` or _(none for all)_ | Posts a Slack nudge to the existing thread for one PR or all your open unapproved PRs |
+| `/dev-agent audit` | _(none)_ | Scans the full codebase for risks and architectural issues; tracks findings across runs (new/persisted/resolved) and offers to create Jira tickets |
+| `/dev-agent fix` | `[ticket key or URL]` or `[description]` | Diagnoses a bug with side-effect checking, applies a scoped fix, runs tests with a pre-commit review gate, opens a PR, and transitions the Jira ticket |
+| `/dev-agent refix` | `[ticket] [rejected PR]` | Re-diagnoses after a fix was rejected — classifies rejection reason (root cause / side effects / both), applies a corrected fix on a new branch, and offers to auto-verify |
+| `/dev-agent build` | `[ticket key or URL]` or `[description]` | Generates a full feature from a Jira ticket with duplicate endpoint guard, destructive migration safety, AC coverage check, and BE+FE wiring |
+| `/dev-agent sweep` | _(none)_ or `--manual "desc1, desc2"` | Batch-processes all open assigned Jira tickets end-to-end with scope preview, routing confirmation, and intra-ticket checkpoint/resume. Use `--manual` to process descriptions without Jira. |
+| `/dev-agent verify` | `[ticket] [PR]` or `[ticket] [PR] --comment` | Pre-merge root cause check — independently traces the code path and returns a SAFE TO MERGE / DO NOT MERGE / NEEDS DISCUSSION verdict. Add `--comment` to post findings as a GitHub review. |
+| `/dev-agent respond` | `[your PR]` | Addresses all open review comments (auto-applies GitHub Suggestions), pushes updates, polls required CI checks, then re-requests review |
+| `/dev-agent review` | `[colleague's PR]` | Reviews a colleague's PR with urgency calibration, stale thread escalation, new pattern detection, inline comments, verdict, and Slack notification |
+| `/dev-agent follow-up` | `[PR]` or _(none for all)_ | Posts Slack nudges oldest-first to open PR threads; escalates to a GitHub comment for PRs open 7+ days |
 | `/dev-agent setup <url> [url2 ...]` | Confluence, Jira, or any web URL | Reads setup docs, deduplicates steps, snapshots machine state, executes, and verifies |
 | `/dev-agent setup --rollback [id]` | Snapshot ID or _(none to list)_ | Rolls back a previous setup session — restores config files, uninstalls brew/npm/pip packages, removes created files |
 | `/dev-agent setup --diff <id1> <id2>` | Two snapshot IDs to compare | Compares two setup snapshots side by side — shows added/removed packages and config file changes between sessions |
