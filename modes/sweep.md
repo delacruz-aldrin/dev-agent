@@ -32,7 +32,17 @@ Pulls all open tickets assigned to you from Jira, lets you set priority order, t
 ## Phase 0 — Setup + Board Scan
 Read config. Run Backend Detection. Run Frontend Detection.
 
-Detect `--manual` flag. If present: parse the comma-separated descriptions into a `MANUAL_ITEMS` list, skip the checkpoint and Jira query steps, and jump directly to Phase 1 using `MANUAL_ITEMS` as the ticket list. Each item has `TICKET_KEY=none` and is routed to fix or build based on description keywords (verbs like "fix", "bug", "broken" → fix mode; all others → build mode).
+Detect `--manual` flag. If present: parse the comma-separated descriptions into a `MANUAL_ITEMS` list. Route each item to fix or build based on description keywords (verbs like "fix", "bug", "broken", "broken" → fix mode; all others → build mode). Then present the routing plan and require confirmation before continuing:
+```
+Manual sweep — routing plan:
+| # | Description | Mode |
+|---|-------------|------|
+| 1 | "fix login bug" | fix |
+| 2 | "add export endpoint" | build |
+
+Correct? (yes / change N to fix|build / remove N)
+```
+Wait for `yes` or adjustments before proceeding. After confirmation, skip checkpoint and Jira query steps and jump directly to Phase 1 using the confirmed `MANUAL_ITEMS` list. Each item has `TICKET_KEY=none`.
 
 Switch to main:
 ```bash
@@ -63,6 +73,18 @@ If tickets exist, let me know and I'll adjust the query.
 ## Phase 1 — Prioritization
 Present grouped (🐛 Bugs first, then 📋 Stories/Tasks/Improvements/Sub-tasks). Ask for priority order. Wait for confirmation before proceeding.
 
+**Scope preview** — after priority order is confirmed, show a summary before any code runs:
+```
+Sweep scope — N tickets queued:
+| # | Ticket | Type | Branch |
+|---|--------|------|--------|
+| 1 | HQA-123 | Bug → fix | bug/HQA-123 |
+| 2 | HQA-456 | Story → build | feat/HQA-456 |
+
+Proceed? (yes / drop N / reorder)
+```
+Wait for final confirmation before starting Phase 2.
+
 ## Phase 2 — Sequential Processing
 Route: Bug → fix mode, everything else → build mode. For each ticket:
 
@@ -74,11 +96,21 @@ Route: Bug → fix mode, everything else → build mode. For each ticket:
 3. PR creation is part of fix/build — verify labels, milestone, reviewer via `gh api` — if fails: note in report and continue
 4. Transition to "For Review" via Atlassian MCP — if fails: note in report and continue
 5. Run **Shared: Post Slack Thread** — look up `{slack_group}` once, reuse for all tickets. Each ticket must use a different angle.
-6. **Update checkpoint:** append the completed `TICKET_KEY` to `.claude/sweep-checkpoint.json`:
+6. **Update checkpoint:** write progress to `.claude/sweep-checkpoint.json` after every significant milestone — not just on ticket completion. Checkpoint structure:
    ```json
-   { "completed": ["HQA-1", "HQA-2", ...] }
+   {
+     "completed": ["HQA-1", "HQA-2"],
+     "in_progress": {
+       "key": "HQA-3",
+       "phase": 2,
+       "step": 6,
+       "branch": "bug/HQA-3"
+     }
+   }
    ```
-   Write this after every successfully processed ticket — even if PR/Slack steps failed — so a resume skips re-doing the code work.
+   - Write `in_progress` at the start of each Phase 2 step (branch created, tests run, PR created, etc.)
+   - On ticket completion: move key to `completed`, clear `in_progress`
+   - On resume: if `in_progress` exists, skip to the recorded phase/step rather than restarting the ticket from scratch
 
 ## Phase 3 — Sweep Report
 ```

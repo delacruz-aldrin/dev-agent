@@ -32,12 +32,18 @@ Read config. Run Backend Detection. Run Frontend Detection.
 
 Switch to main:
 ```bash
-git checkout main && git pull origin main
+git checkout {base_branch} && git pull origin {base_branch}
 ```
 If checkout fails (uncommitted changes), stop:
 ```
 ⛔ Uncommitted changes detected. Stash (`git stash`) or commit before running /dev-agent fix.
 ```
+
+**Breaking-change guard:** after pulling, check if any files in the traced path were modified by the pull:
+```bash
+git diff HEAD@{1} HEAD --name-only
+```
+If the pull changed files that overlap with the likely trace path (routes, controllers, models, serializers, key FE files), warn: "main was updated and the following traced files changed: [list]. Review these changes before branching? (yes to pause / no to continue)". Wait for response.
 
 Detect input:
 - **Jira link** → fetch via Atlassian MCP (cloudId = `{jira_domain}`) — description, steps, expected, actual. Derive `TICKET_KEY` from URL.
@@ -62,6 +68,7 @@ Symptom → focus mapping:
 - **wrong data** → transformation, serialization, callbacks; FE: stale state, incorrect field mapping
 - **auth/unauthorized** → permission checks, session handling; FE: token storage, route guards, role checks
 - **UI/display bug** → FE only: component logic, conditional rendering, missing loading states
+- **missing feature / not implemented** → treat as a scoped build within fix flow: generate only the missing layer(s) per `BE_ARCH_TRACE`, do not restructure existing code, use fix branch naming (`bug/` or `fix/manual-`)
 
 ```xml
 <prompt>
@@ -100,15 +107,19 @@ Symptom → focus mapping:
    If a caller needs a fix: apply it, add a spec, re-run `{BE_TEST_CMD}`.
 
 9. Run **Shared: Run Quality Checks**
-10. Commit and push:
+10. **Pre-commit review gate:** show a summary of all changed files and a brief description of each change, then ask: "Ready to commit? (yes / review / revert all)".
+    - `yes` → proceed
+    - `review` → show full diff of each changed file, then re-ask
+    - `revert all` → revert all changes, note in report, stop
+11. Commit and push:
    ```bash
    git add {every file changed in this fix}   # list files explicitly — never use git add . or git add -A
    git commit -m "fix: [short description]"
    git push origin HEAD
    ```
-11. Run **Shared: Create PR** with `TICKET_KEY` (or `none` if manual). Pass the Jira ticket URL as the ticket link.
-12. Transition Jira to "For Review" via Atlassian MCP — if fails: note in report and continue
-13. If standalone (not via sweep): run **Shared: Post Slack Thread**
+12. Run **Shared: Create PR** with `TICKET_KEY` (or `none` if manual). Pass the Jira ticket URL as the ticket link.
+13. Transition Jira to "For Review" via Atlassian MCP — if fails: note in report and continue
+14. If standalone (not via sweep): run **Shared: Post Slack Thread**
 
 ```
 ## Bug Report — [Endpoint]

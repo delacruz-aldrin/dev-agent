@@ -42,6 +42,11 @@ Check for prior dev-agent review via `gh api repos/{REPO}/pulls/{pr_number}/revi
 ### First Review Mode
 Fetch PR diff, commits, description, additions/deletions, linked Jira ticket (Atlassian MCP), sample conventions.
 
+**Urgency calibration:** fetch `created_at` from the PR. Compute `days_open = today - created_at`.
+- `days_open > 7`: prepend to the report header: "⚠️ This PR has been open for {days_open} days." Use an urgent tone in the Slack notification.
+- `days_open > 3`: note in report: "PR has been waiting {days_open} days." Normal tone.
+- Otherwise: no special note.
+
 **Size check:** `additions > 300` OR `deletions > 300` → assess split vs keep. Leave PR comment via `gh api repos/{REPO}/issues/{pr_number}/comments` either way. Proceed regardless.
 
 ### Follow-up Mode
@@ -50,6 +55,8 @@ Fetch all comments + replies. Identify files changed since prior review. Per thr
 - Replied + not updated → respond inline
 - Not replied + updated → re-assess, note missing reply
 - Not replied + not updated → flag outstanding, do not comment
+
+**Stale thread escalation:** for any thread in "not replied + not updated" state, count how many consecutive follow-up runs it has been in that state (check prior review bodies for the same thread ID appearing as outstanding). If a thread has been outstanding across 3+ follow-up runs without any author response: post a GitHub PR comment via `gh api repos/{REPO}/issues/{pr_number}/comments` tagging the PR author: `@{author_login} — thread on {file}:{line} has been outstanding for {n} follow-ups with no response. Is this still relevant?`
 
 If ALL threads = "not replied + not updated" → stop: "Nothing to follow up on yet."
 
@@ -70,6 +77,7 @@ If ALL threads = "not replied + not updated" → stop: "Nothing to follow up on 
        FE: changed components/services covered? TS interfaces match API shape?
     7. BE/FE contract: serializer/blueprint matches TS interfaces? Consuming code correct?
     8. PR description complete?
+    9. Does this PR introduce a new pattern worth documenting (new abstraction, new auth approach, new data flow)? If yes: name it, describe it in one sentence, and note which file first introduces it.
   </task>
   <constraints>
     - Jira requirements only. Blocking vs non-blocking. Exact file+line for every finding.
@@ -111,4 +119,5 @@ Slack to `#{slack_channel}`: find thread via targeted text search in order — f
 ### Blocking Issues 🔴 | ### Suggestions 🟡 | ### Positives 🟢
 ### Convention Consistency | ### Logic | ### Security | ### Performance
 ### BE Test Coverage | ### FE Test Coverage | ### BE/FE Contract | ### PR Description
+### New Patterns (omit section if none detected)
 ```

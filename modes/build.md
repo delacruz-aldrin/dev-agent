@@ -40,6 +40,15 @@ If checkout fails (uncommitted changes), stop:
 ```
 
 Detect input (Jira link or manual). Derive `TICKET_KEY`.
+
+**Duplicate endpoint guard:** if the input or ticket description specifies an HTTP method + path (e.g. `GET /api/p/nodes/:id`), grep the routes file for a matching pattern before branching:
+- `rails`: `grep -n "nodes" config/routes.rb`
+- `express`: `grep -rn "nodes" routes/`
+- `django`/`fastapi`: `grep -rn "nodes" urls.py routers/`
+- `go`: grep router files
+
+If a route with the same method and path already exists: "A similar route already exists: `[method path]` at `[file:line]`. Is this a new variant or a duplicate? (variant / duplicate / cancel)". Stop if `duplicate` or `cancel`. Note `variant` in report and continue.
+
 Create branch per **Shared: Create Branch**.
 
 Sample silently:
@@ -81,24 +90,36 @@ Sample silently:
 1. Write all BE files to correct paths
 2. Update routes
 3. If `BE_FRAMEWORK=rails`:
-   - If the feature requires new or altered DB columns/tables: generate a migration (`bundle exec rails generate migration ...`), verify the migration file, then run `bundle exec rails db:migrate`. Note: services must be running (`make services.up`) for migrations to work.
+   - If the feature requires new or altered DB columns/tables: generate a migration (`bundle exec rails generate migration ...`), verify the migration file, then **inspect for destructive operations**: if the migration contains `drop_column`, `drop_table`, `change_column` (type change), `remove_index`, or `remove_reference`, pause:
+     ```
+     ⚠️  Destructive migration detected: [operation] on [table/column]
+     This cannot be automatically rolled back in production. Confirm this is intentional. (yes / abort)
+     ```
+     If `abort`: stop and revert the generated migration file. If `yes`: run `bundle exec rails db:migrate`. Note: services must be running (`make services.up`) for migrations to work.
    - Create co-located `.openapi.yml` fragment, run `{API_GEN_CMD}`
 4. Create/update BE specs for all generated and modified files
-5. Write FE files (interfaces, component; service only if `API_CLIENT=manual`)
-6. Run `{BE_TEST_CMD}`:
-   - Passes → continue | Fails → fix + re-run | Still failing → revert all changes, note in report, stop
-7. If `FE_TEST≠none`: run `{FE_TEST_CMD}`:
-   - Passes → continue | Fails → fix + re-run | Still failing → revert FE changes, note in report
-8. Run **Shared: Run Quality Checks**
-9. Commit and push:
-   ```bash
-   git add {every file changed in this build}   # list files explicitly — never use git add . or git add -A
-   git commit -m "feat: [short description]"
-   git push origin HEAD
+5. **AC coverage check (Jira tickets only — skip if manual):** map each acceptance criterion from the Jira ticket to the files/methods generated. Produce a checklist:
    ```
-10. Run **Shared: Create PR** with `TICKET_KEY` (or `none` if manual). Pass the Jira ticket URL as the ticket link.
-11. Transition Jira to "For Review" via Atlassian MCP — if fails: note in report and continue
-12. If standalone: run **Shared: Post Slack Thread**
+   AC Coverage:
+   ✅ "Users can fetch a single node" → GET /api/p/nodes/:id in nodes_controller.rb
+   ❌ "Returns translations for the node" → NOT FOUND — no serializer field or FE interface includes translations
+   ```
+   For each uncovered AC item: "AC item [N] has no implementation. Generate it now or skip? (generate / skip)". If `generate`: implement it before continuing. Do not proceed to commit with any unresolved `generate` responses outstanding.
+6. Write FE files (interfaces, component; service only if `API_CLIENT=manual`)
+7. Run `{BE_TEST_CMD}`:
+   - Passes → continue | Fails → fix + re-run | Still failing → revert all changes, note in report, stop
+8. If `FE_TEST≠none`: run `{FE_TEST_CMD}`:
+   - Passes → continue | Fails → fix + re-run | Still failing → revert FE changes, note in report
+9. Run **Shared: Run Quality Checks**
+10. Commit and push:
+    ```bash
+    git add {every file changed in this build}   # list files explicitly — never use git add . or git add -A
+    git commit -m "feat: [short description]"
+    git push origin HEAD
+    ```
+11. Run **Shared: Create PR** with `TICKET_KEY` (or `none` if manual). Pass the Jira ticket URL as the ticket link.
+12. Transition Jira to "For Review" via Atlassian MCP — if fails: note in report and continue
+13. If standalone: run **Shared: Post Slack Thread**
 
 ```
 ## New Feature — [Name]

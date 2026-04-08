@@ -104,6 +104,7 @@ After all values are collected, validate each:
 - `jira_domain`: must not contain `://` or spaces
 - `jira_project`: split on `,`, trim whitespace from each token — each token must be uppercase letters and digits only. Normalize before writing: re-join tokens with `,` (no spaces), so `"MULTI, HQA"` is stored as `"MULTI,HQA"`.
 - `slack_channel`, `slack_group`, `pr_reviewer_team`, `pr_milestone`: must be non-empty strings
+- `base_branch`: run `git ls-remote --heads origin {value}` — if output is empty, the branch doesn't exist on the remote. Re-prompt: "Branch '{value}' not found on remote. Check the branch name and try again."
 
 If any validation fails: show the specific error and re-prompt that field only. Do not re-ask fields that passed.
 
@@ -351,6 +352,7 @@ Used in fix, build, sweep. If Slack MCP fails: note in report and continue.
 - GitHub: `gh api repos/{REPO}` — expect 200
 - Jira: for each project key in `{jira_project}` (split on `,`), fetch project details via Atlassian MCP using `{jira_domain}` — expect success for each
 - Slack: look up `{slack_channel}` via Slack MCP — expect channel found
+- Base branch: `git ls-remote --heads origin {base_branch}` — expect non-empty output
 
 Report pass/fail per integration:
 ```
@@ -358,5 +360,6 @@ Report pass/fail per integration:
 ✅ GitHub — C-FO/baberu (accessible)
 ✅ Jira — HQA project found at your-org.atlassian.net
 ❌ Slack — channel #team-dev-agent not found (check channel name or MCP permissions)
+✅ Base branch — main exists on remote
 ```
-If any fail: suggest the specific fix (wrong channel name, missing MCP, repo not found, etc.).
+If any fail: suggest the specific fix (wrong channel name, missing MCP, repo not found, branch name typo, etc.).

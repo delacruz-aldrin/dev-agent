@@ -5,13 +5,16 @@
 ```
 /dev-agent setup <url> [url2 url3 ...]
 /dev-agent setup --rollback [snapshot-id]
+/dev-agent setup --diff <id1> <id2>
 ```
 
 ---
 
-## Rollback Branch
+## Rollback / Diff Branch
 
 If `--rollback` flag is present, skip to **Utility: Rollback** at the bottom of this file.
+
+If `--diff` flag is present with two IDs, skip to **Utility: Diff** at the bottom of this file.
 
 ---
 
@@ -112,6 +115,8 @@ Snapshot structure:
 Capture each field:
 - `brew_packages_before`: run `brew list --formula` (if brew exists), store as array
 - `asdf_plugins_before`: run `asdf plugin list` → for each plugin, run `asdf list <plugin>`, store as `{ "ruby": ["3.3.0"], "nodejs": ["22.9.0"] }`
+- `npm_globals_before`: run `npm list -g --depth=0 --json 2>/dev/null | jq '.dependencies | keys'` (if npm exists), store as array of package names
+- `pip_packages_before`: run `pip list --format=json 2>/dev/null` (if pip exists), store as array of `{ "name": "...", "version": "..." }` objects
 - `config_files`: read each file's current content if it exists; store `null` if not present (new file)
 - `files_created` / `dirs_created`: populated during execution, not at snapshot time
 
@@ -140,7 +145,16 @@ Work through the unified plan in order. For each `⏳ pending` step:
         {any instructions from doc}
      Press Enter when done (or 's' to skip):
      ```
-3. After each step: run its `verify` check. If it fails:
+3. After each step: run its `verify` check. If it fails for a `manual` step:
+   ```
+   ❌ Verification failed for manual step: {description}
+   Options: [r]etry verification / [s]kip and continue / [d]one — mark as complete anyway
+   ```
+   - `retry` → re-run the verify check (user may have just finished the manual step)
+   - `skip` → mark as skipped, continue to next step
+   - `done` → mark as complete without verification (user asserts it's done), continue
+
+   If it fails for a non-manual step:
    ```
    ❌ Step failed: {description}
    Error: {error output}
@@ -248,6 +262,8 @@ Steps:
 1. **Restore config files** — for each key in `config_files`: if original was `null` (file didn't exist), delete it. Otherwise write back the original content.
 2. **Uninstall Homebrew packages** — compute diff: `current brew list` minus `brew_packages_before`. Run `brew uninstall {package}` for each.
 3. **Remove asdf plugins/versions** — compute diff against `asdf_plugins_before`. Remove added versions via `asdf uninstall {plugin} {version}`. If all versions of a plugin were added, remove the plugin via `asdf plugin remove {plugin}`.
+3a. **Remove npm globals** — compute diff: `current npm list -g --depth=0` names minus `npm_globals_before`. Run `npm uninstall -g {package}` for each added package (skip if npm not present).
+3b. **Remove pip packages** — compute diff: `current pip list` names minus `pip_packages_before` names. Run `pip uninstall -y {package}` for each added package (skip if pip not present).
 4. **Delete created files/dirs** — for each path in `files_created`: delete if exists. For each path in `dirs_created`: `rmdir` if empty (do not force-delete non-empty dirs — warn user instead).
 5. **List manual removals** — print anything that cannot be auto-undone:
    ```
@@ -263,6 +279,8 @@ Print rollback summary:
 ✅ Config files restored: {n}
 ✅ Brew packages removed: {n}
 ✅ asdf plugins/versions removed: {n}
+✅ npm globals removed: {n}
+✅ pip packages removed: {n}
 ✅ Files deleted: {n}
 ⚠️  Manual removals needed: {n} (see above)
 
@@ -270,3 +288,46 @@ Snapshot {id} has been archived to ~/.claude/setup-snapshots/rolled-back/{id}.js
 ```
 
 Move (don't delete) the snapshot file to `~/.claude/setup-snapshots/rolled-back/` after successful rollback, so it can be referenced but won't appear in the active list.
+
+---
+
+## Utility: Diff
+
+### Usage
+```
+/dev-agent setup --diff <id1> <id2>
+```
+
+Compares two snapshots side by side. Load both JSONs from `~/.claude/setup-snapshots/`. If either is not found, check `~/.claude/setup-snapshots/rolled-back/` before erroring.
+
+Produce a diff report:
+
+```
+## Snapshot Diff — {id1} vs {id2}
+
+| Field | {id1} ({date1}) | {id2} ({date2}) |
+|-------|-----------------|-----------------|
+| Source docs | doc1.url | doc2.url |
+| Steps executed | 12 | 9 |
+| Steps skipped | 3 | 5 |
+
+### Brew packages
+  Added in {id2} but not {id1}: [list]
+  Added in {id1} but not {id2}: [list]
+  Common to both: [list]
+
+### asdf plugins/versions
+  Added in {id2} but not {id1}: [list]
+  Added in {id1} but not {id2}: [list]
+
+### npm globals
+  Added in {id2} but not {id1}: [list]
+  Added in {id1} but not {id2}: [list]
+
+### pip packages
+  Added in {id2} but not {id1}: [list]
+  Added in {id1} but not {id2}: [list]
+
+### Config file changes
+  {file}: changed in {id2} only / changed in both / unchanged
+```

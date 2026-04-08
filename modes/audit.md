@@ -23,6 +23,12 @@ Read config. Run Backend Detection. Run Frontend Detection.
 
 Run **Shared: Frontend Convention Sampling** (unconditionally — audit always needs a grounded picture of FE patterns). Store sampled patterns as `FE_CONVENTIONS` for use in Phase 1 XML.
 
+**BE convention sampling:** find the closest existing controller (+ usecase/interactor if applicable), serializer/blueprint, and spec. Read one of each. Store as `BE_CONVENTIONS` for use in Phase 1 XML. This grounds the audit in current conventions and allows accurate detection of inconsistencies.
+
+**Prior audit state:** check for `.claude/dev-agent-audit-state.json` in the project root.
+- If found: load `previous_hashes` (a map of finding hash → first seen date). Set `PRIOR_STATE=true`.
+- If not found: set `PRIOR_STATE=false`, initialize empty map.
+
 Read silently based on `BE_FRAMEWORK`:
 - `rails`: `Gemfile`, `Gemfile.lock`, `config/routes.rb`, `app/` structure, `config/`
 - `express`: root `package.json`, `routes/`, `src/` structure
@@ -35,7 +41,7 @@ Read silently based on `BE_FRAMEWORK`:
 <prompt>
   <context>[Stack (BE_FRAMEWORK + version, STORE, API_CLIENT), architecture, key deps]</context>
   <files>[Key files across BE and FE, line counts, complexity flags]</files>
-  <conventions>[FE_CONVENTIONS — sampled patterns from closest existing components, hooks, and interfaces; omit if FRONTEND_ROOT=none]</conventions>
+  <conventions>[BE_CONVENTIONS — sampled controller/usecase/serializer/spec patterns; FE_CONVENTIONS — sampled components/hooks/interfaces; omit FE block if FRONTEND_ROOT=none]</conventions>
   <task>
     1. Top 3 highest-risk issues causing production bugs or performance degradation?
     2. Architectural inconsistencies slowing future development (BE and FE)?
@@ -54,8 +60,22 @@ Read silently based on `BE_FRAMEWORK`:
 ```
 
 ## Phase 2 — Report
+For each finding, compute a short hash (finding type + file + description, first 8 chars of SHA). Tag each finding:
+- `NEW` — hash not in `previous_hashes` (or `PRIOR_STATE=false`)
+- `PERSISTED` — hash present in `previous_hashes`, include first-seen date
+- `RESOLVED` — hash was in `previous_hashes` but the issue no longer exists (include in a Resolved section)
+
+After generating the report, write updated state back to `.claude/dev-agent-audit-state.json`:
+```json
+{ "previous_hashes": { "<hash>": "<ISO8601 first-seen date>", ... } }
+```
+Include all current findings (NEW + PERSISTED). Drop RESOLVED findings.
+
+If `PRIOR_STATE=true`: lead the report with: "Delta since last audit: N new, M persisted, P resolved."
+
 ```
 ## Audit Report — [Project]
+### Delta (if PRIOR_STATE=true): N new | M persisted | P resolved
 ### Top Production Risks | ### Architectural Issues | ### Refactor Priority
 ### Security Concerns | ### Coverage Gaps | ### Frontend Risks | ### BE/FE Contract Gaps
 ```
@@ -63,6 +83,14 @@ Read silently based on `BE_FRAMEWORK`:
 ## Phase 3 — Ticket Creation
 Show all 🔴 and 🟡 findings numbered. Ask:
 1. "Which findings to create as Jira tickets? Reply with numbers or 'all'."
+
+**Ticket volume cap:** after the user's selection is parsed, count the selected findings. If count > 5: pause before creating any tickets:
+```
+⚠️  You've selected {count} findings for ticket creation. That's a lot at once.
+Consider batching — creating too many tickets at once can overwhelm the backlog.
+Proceed with all {count}? (yes / reduce to top 5 by severity / pick different numbers)
+```
+Wait for response before creating any tickets.
 2. "Assign to you or leave unassigned? Reply 'me' or 'unassigned'."
 3. If `{jira_project}` contains multiple keys (e.g. `MULTI,HQA`): "Which project should I create tickets in? ({jira_project})" — wait for a single key. If single key: "I'll create tickets in {jira_project}. Correct? Reply 'yes' or provide a different key." Store the chosen key as `TARGET_PROJECT`.
 

@@ -33,6 +33,14 @@ Pre-merge root cause check. Independently traces the affected code path in the l
 ## Phase 0 — Setup
 Read config. Accept `/dev-agent verify [Jira link] [PR link] [--comment]`. Detect `--comment` flag — store as `POST_COMMENT=true` or `false`.
 
+Run Backend Detection. Run Frontend Detection. (Required to populate `BE_ARCH_TRACE` for the live codebase trace.)
+
+**Prior verify check:** look for previous COMMENT reviews on this PR authored by the authenticated user:
+```bash
+gh api repos/{REPO}/pulls/{pr_number}/reviews --jq '[.[] | select(.user.login == "<current_user>" and .body | startswith("## Verify Report"))]'
+```
+If a prior verify report exists: note `PRIOR_VERIFY=true` and store the prior findings for delta comparison in Phase 2. Otherwise `PRIOR_VERIFY=false`.
+
 - Fetch Jira ticket via Atlassian MCP (cloudId = `{jira_domain}`)
 - Fetch PR + diff: `gh api repos/{REPO}/pulls/{pr_number}` and `.../files`
 - Independently trace endpoint in live codebase (ignore PR diff) using `BE_ARCH_TRACE`
@@ -68,16 +76,27 @@ Classify each finding before including it in the report:
 - 🟡 **Non-blocking** — suboptimal but not a correctness issue; suggest as improvement
 - 🟢 **Positive** — worth calling out explicitly
 
+If `PRIOR_VERIFY=true`: compare current findings against the prior report. Tag each finding as:
+- `NEW` — not in the prior report
+- `RESOLVED` — was in the prior report, no longer present
+- `PERSISTED` — still present from the prior report
+
+Lead the report with a delta summary: "N new findings, M resolved since last verify, P persisted."
+
 ```
 ## Verify Report — [Ticket] / [PR]
-### Verdict (APPROVE / REQUEST_CHANGES / COMMENT)
+### Verdict (SAFE TO MERGE / DO NOT MERGE / NEEDS DISCUSSION)
+  - SAFE TO MERGE — no blocking findings
+  - DO NOT MERGE — one or more blocking findings present
+  - NEEDS DISCUSSION — no blockers but non-trivial suggestions or ambiguous risks
+### Delta (if PRIOR_VERIFY=true): N new | M resolved | P persisted
 ### Root Cause Assessment
 ### PR vs Live Trace (BE) | ### PR vs Live Trace (FE)
 ### BE/FE Contract Gaps | ### Spec Coverage (BE) | ### Test Coverage (FE)
 ### New Risks | ### Convention Consistency
 ### Findings
-| # | Severity | File | Finding |
-|---|----------|------|---------|
+| # | Severity | Status | File | Finding |
+|---|----------|--------|------|---------|
 ```
 
 If `POST_COMMENT=true`: post the full report body as a COMMENT review via:

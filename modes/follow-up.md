@@ -50,9 +50,17 @@ Read config.
 **No link:** resolve current user login, then fetch open PRs:
 ```bash
 CURRENT_USER=$(gh api user --jq '.login')
-gh api "repos/{REPO}/pulls?state=open" --jq "[.[] | select(.user.login == \"$CURRENT_USER\") | {number, title, html_url}]"
+gh api "repos/{REPO}/pulls?state=open" --jq "[.[] | select(.user.login == \"$CURRENT_USER\") | {number, title, html_url, created_at}]"
 ```
-Filter out already-approved PRs. Process each sequentially.
+Filter out already-approved PRs. Sort remaining PRs by `days_open` descending (oldest first). Present a grouped table before nudging:
+```
+Open PRs queued for nudge (oldest first):
+| # | PR | Days Open | Last Activity |
+|---|-----|-----------|---------------|
+| 1 | #519 — Add export endpoint | 12 days | 3 days ago |
+| 2 | #507 — Fix login redirect | 6 days | 1 day ago |
+```
+Process each sequentially in this order.
 
 ## Phase 1 — Status Check
 Skip if merged, closed, or already approved.
@@ -89,3 +97,7 @@ Read existing thread messages. Write a reply:
 - Never: "just following up", "circling back", "as per my last", "As an AI"
 
 Send via Slack MCP. Reply in thread using `thread_ts`. Send immediately — no confirmation. Never create a new top-level message if a thread already exists. Never touch GitHub.
+
+**Escalation tier:** after posting the Slack nudge, check `days_open` for this PR:
+- `days_open > 7`: offer to also post a GitHub PR comment tagging the assigned reviewers: "This PR has been open {days_open} days without a review. Post a GitHub comment tagging reviewers? (yes / no)". If `yes`: post via `gh api repos/{REPO}/issues/{pr_number}/comments` with `@reviewer1 @reviewer2 — this PR has been waiting {days_open} days. Could you take a look?`
+- Otherwise: no GitHub comment.

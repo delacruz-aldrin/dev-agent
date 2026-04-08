@@ -68,11 +68,25 @@ Produce a written **Rejection Summary**:
 [Edge cases, environment conditions, incorrect assumptions about root cause, or side effects introduced]
 ```
 
-Classify the rejection as one of:
-- `REJECTION_TYPE=wrong_root_cause` — the fix addressed the wrong thing; the bug persisted or manifested differently
-- `REJECTION_TYPE=side_effects` — the core fix was correct but introduced unintended behavior in other areas
+Classify the rejection using this structured prompt — do not ask as free text:
+```
+Based on the rejection summary, which best describes why the PR was rejected?
 
-If the rejection reason is unclear from PR comments/CI alone, flag it and ask the user to clarify before continuing. Do not proceed to Phase 2 until the summary and classification are complete.
+1. Wrong root cause — the fix addressed the wrong thing; the bug persisted or manifested differently
+2. Side effects — the core fix was correct but introduced unintended behavior in other areas
+3. Both — misdiagnosis AND side effects
+4. Unclear — I'll describe it
+
+Reply with 1, 2, 3, or 4 (and a description if 4).
+```
+
+Map response to `REJECTION_TYPE`:
+- `1` → `wrong_root_cause`
+- `2` → `side_effects`
+- `3` → treat as `wrong_root_cause` for Phase 2 (re-diagnose from scratch), but also run Side Effect Map in Phase 2 as a separate step
+- `4` → ask one follow-up clarifying question before proceeding
+
+Do not proceed to Phase 2 until the summary and classification are complete.
 
 ## Phase 2 — Re-diagnosis
 
@@ -135,7 +149,7 @@ Do not re-diagnose the original bug — the core fix is correct. Instead, isolat
    - Passes → continue | Fails → fix + re-run | Still failing → revert all changes, note in report, stop
 7. If `FE_TEST≠none`: run `{FE_TEST_CMD}`:
    - Passes → continue | Fails → fix + re-run | Still failing → revert FE changes, note in report, continue with BE-only
-8. **Side-effect check** — run regardless of `REJECTION_TYPE` (same rule as fix mode):
+8. **Side-effect check** — skip if `REJECTION_TYPE=side_effects` (Phase 2 already produced a complete Side Effect Map that covers this). Run only if `REJECTION_TYPE=wrong_root_cause`:
    Trigger if any changed file is a shared interactor, model method, service, serializer/blueprint, or shared frontend hook/store/utility.
    If triggered: grep callers, read each, flag at-risk ones, add specs, fix if needed, re-run `{BE_TEST_CMD}`.
 9. Run **Shared: Run Quality Checks**
@@ -156,6 +170,7 @@ Do not re-diagnose the original bug — the core fix is correct. Instead, isolat
      - Updated test cases checklist covering the rejection scenario
 2. Transition Jira back to "For Review" via Atlassian MCP — if fails: note in report and continue
 3. Run **Shared: Post Slack Thread**
+4. **Auto-verify offer:** ask: "Run `/dev-agent verify` on the new PR to confirm the corrected diagnosis holds? (yes/no)". If yes, run verify inline with `--comment` so findings are posted directly to the PR.
 
 ```
 ## Refix Report — [Endpoint]
