@@ -30,6 +30,11 @@ Diagnoses a bug and opens a PR with the fix, specs, and Slack notification.
 ## Phase 0 — Setup
 Read config. Run Backend Detection. Run Frontend Detection.
 
+**Atlassian MCP pre-flight:** fetch project metadata for `{jira_project}` via Atlassian MCP (cloudId = `{jira_domain}`). If it fails, stop immediately:
+```
+⛔ Atlassian MCP unreachable. Check authentication before continuing.
+```
+
 Switch to main:
 ```bash
 git checkout {base_branch} && git pull origin {base_branch}
@@ -51,6 +56,13 @@ Detect input:
 
 Create branch per **Shared: Create Branch**.
 
+**Print Session State** before proceeding to Phase 1:
+```
+## Session State
+BE_FRAMEWORK={value} | FRONTEND_ROOT={value} | STORE={value} | API_CLIENT={value}
+TICKET_KEY={value} | BRANCH={value}
+```
+
 ## Phase 1 — XML
 Trace flow using `BE_ARCH_TRACE`. Also trace frontend based on `STORE`:
 - `tanstack-query` + `orval`: generated hook → component
@@ -71,7 +83,7 @@ Symptom → focus mapping:
 - **missing feature / not implemented** → treat as a scoped build within fix flow: generate only the missing layer(s) per `BE_ARCH_TRACE`, do not restructure existing code, use fix branch naming (`bug/` or `fix/manual-`)
 
 ```xml
-<prompt>
+<analysis>
   <context>[Stack, endpoint, layers, symptom]</context>
   <files>[Traced files only, line counts, patterns]</files>
   <task>[Symptom-specific questions across BE and FE layers]</task>
@@ -80,7 +92,7 @@ Symptom → focus mapping:
     - Find exact bug location. Flag related risks. Update specs/tests for changed files.
     - If fix changes API response shape: update TS interfaces and consuming code.
   </constraints>
-</prompt>
+</analysis>
 ```
 
 ## Phase 2 — Execute

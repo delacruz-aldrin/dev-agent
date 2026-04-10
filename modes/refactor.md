@@ -62,6 +62,13 @@ Check inputs in this order:
 - description → `refactor/<short-slug>`
 - selection → `refactor/<filename-slug>` (use the file containing the selection)
 
+**Print Session State** before proceeding to Phase 1:
+```
+## Session State
+BE_FRAMEWORK={value} | FRONTEND_ROOT={value} | STORE={value} | API_CLIENT={value}
+REFACTOR_TARGET={value} | ENTRY_HINT={value} | BRANCH={value}
+```
+
 ---
 
 ## Phase 1 — Scope Expansion & Coverage Gate
@@ -107,7 +114,7 @@ Write missing specs first? (yes / skip / abort)
 ## Phase 2 — XML + Refactor Plan
 
 ```xml
-<prompt>
+<analysis>
   <context>[Stack, BE_FRAMEWORK, STORE, ENTRY_HINT, REFACTOR_SCOPE files, CALLER_SET]</context>
   <files>[Full content of REFACTOR_SCOPE files + relevant excerpts from CALLER_SET]</files>
   <task>
@@ -123,7 +130,7 @@ Write missing specs first? (yes / skip / abort)
     - No new dependencies. No new patterns not already present in the codebase.
     - If a caller needs updating, include it in the plan — do not silently leave broken callers.
   </constraints>
-</prompt>
+</analysis>
 ```
 
 After analysis, present a structured refactor plan and wait for approval:

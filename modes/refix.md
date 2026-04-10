@@ -27,6 +27,11 @@ Re-diagnoses a bug after a fix was rejected or reverted, then opens a corrected 
 ## Phase 0 — Setup
 Read config. Run Backend Detection. Run Frontend Detection.
 
+**Atlassian MCP pre-flight:** fetch project metadata for `{jira_project}` via Atlassian MCP (cloudId = `{jira_domain}`). If it fails, stop immediately:
+```
+⛔ Atlassian MCP unreachable. Check authentication before continuing.
+```
+
 Switch to main:
 ```bash
 git checkout main && git pull origin main
@@ -46,6 +51,13 @@ Check for branch collision before creating:
 git branch --list "bug/{TICKET_KEY}-2" "feat/{TICKET_KEY}-2"
 ```
 If the branch already exists, increment the suffix: try `-3`, `-4`, etc. until a free name is found. Use that name.
+
+**Print Session State** before proceeding to Phase 1:
+```
+## Session State
+BE_FRAMEWORK={value} | FRONTEND_ROOT={value} | STORE={value} | API_CLIENT={value}
+TICKET_KEY={value} | BRANCH={value}
+```
 
 ## Phase 1 — Rejection Autopsy
 
@@ -97,7 +109,7 @@ Trace the flow fresh using `BE_ARCH_TRACE`. Also trace frontend based on `STORE`
 Read traced files only — do not rely on the previous fix's file selection.
 
 ```xml
-<prompt>
+<analysis>
   <context>[Stack, endpoint, layers, symptom]</context>
   <files>[Traced files only, line counts, patterns]</files>
   <previous_attempt>
@@ -115,7 +127,7 @@ Read traced files only — do not rely on the previous fix's file selection.
       that fails before the fix and passes after.
     - If fix changes API response shape: update TS interfaces and consuming code.
   </constraints>
-</prompt>
+</analysis>
 ```
 
 ### If `REJECTION_TYPE=side_effects`

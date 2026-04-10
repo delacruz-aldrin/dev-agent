@@ -33,6 +33,11 @@ Pre-merge root cause check. Independently traces the affected code path in the l
 ## Phase 0 — Setup
 Read config. Accept `/dev-agent verify [Jira link] [PR link] [--comment]`. Detect `--comment` flag — store as `POST_COMMENT=true` or `false`.
 
+**Atlassian MCP pre-flight:** fetch project metadata for `{jira_project}` via Atlassian MCP (cloudId = `{jira_domain}`). If it fails, stop immediately:
+```
+⛔ Atlassian MCP unreachable. Check authentication before continuing.
+```
+
 Run Backend Detection. Run Frontend Detection. (Required to populate `BE_ARCH_TRACE` for the live codebase trace.)
 
 **Prior verify check:** look for previous COMMENT reviews on this PR authored by the authenticated user:
@@ -46,9 +51,16 @@ If a prior verify report exists: note `PRIOR_VERIFY=true` and store the prior fi
 - Independently trace endpoint in live codebase (ignore PR diff) using `BE_ARCH_TRACE`
 - Produce: PR finding vs Live trace finding
 
+**Print Session State** before proceeding to Phase 1:
+```
+## Session State
+BE_FRAMEWORK={value} | FRONTEND_ROOT={value} | STORE={value} | API_CLIENT={value}
+PR_NUMBER={value} | POST_COMMENT={true/false} | PRIOR_VERIFY={true/false}
+```
+
 ## Phase 1 — XML
 ```xml
-<prompt>
+<analysis>
   <context>[Ticket summary, fix type, layers, PR scope — BE and FE]</context>
   <files>[Changed files by layer — BE: controller/model/serializer; FE: service/hooks/component/interface]</files>
   <task>
@@ -67,7 +79,7 @@ If a prior verify report exists: note `PRIOR_VERIFY=true` and store the prior fi
     - If live trace diverges from PR: flag as gap.
     - BE change with no FE update is a gap if the feature has a UI surface.
   </constraints>
-</prompt>
+</analysis>
 ```
 
 ## Phase 2 — Report

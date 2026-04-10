@@ -29,6 +29,11 @@ Automatically detects whether this is a first review or a follow-up review based
 ## Phase 0 — Setup + Ownership Check
 Read config.
 
+**Atlassian MCP pre-flight:** fetch project metadata for `{jira_project}` via Atlassian MCP (cloudId = `{jira_domain}`). If it fails, stop immediately:
+```
+⛔ Atlassian MCP unreachable. Check authentication before continuing.
+```
+
 Hard block — colleagues' PRs only:
 - Fetch PR: `gh api repos/{REPO}/pulls/{pr_number}`
 - Fetch authenticated user: `gh api user`
@@ -60,9 +65,15 @@ Fetch all comments + replies. Identify files changed since prior review. Per thr
 
 If ALL threads = "not replied + not updated" → stop: "Nothing to follow up on yet."
 
+**Print Session State** before proceeding to Phase 1:
+```
+## Session State
+PR_NUMBER={value} | REVIEW_MODE={first_review/follow_up} | DAYS_OPEN={value}
+```
+
 ## Phase 1 — XML
 ```xml
-<prompt>
+<analysis>
   <context>[Ticket summary, layers, PR scope]</context>
   <files>[Changed files by layer]</files>
   <conventions>[Sampled patterns]</conventions>
@@ -85,7 +96,7 @@ If ALL threads = "not replied + not updated" → stop: "Nothing to follow up on 
     - Missing FE integration for a user-facing feature is 🔴 blocker.
     - BE/FE contract mismatch is 🔴 blocker.
   </constraints>
-</prompt>
+</analysis>
 ```
 
 ## Phase 2 — Execute

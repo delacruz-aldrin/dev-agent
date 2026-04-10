@@ -36,9 +36,16 @@ Read silently based on `BE_FRAMEWORK`:
 - `go`: `go.mod`, router files, project structure
 - Always: `{FRONTEND_ROOT}` structure, `{FRONTEND_ROOT}/package.json`, `tsconfig.json`, `vite.config.*`
 
+**Print Session State** before proceeding to Phase 1:
+```
+## Session State
+BE_FRAMEWORK={value} | FRONTEND_ROOT={value} | STORE={value} | API_CLIENT={value}
+PRIOR_STATE={true/false}
+```
+
 ## Phase 1 — XML
 ```xml
-<prompt>
+<analysis>
   <context>[Stack (BE_FRAMEWORK + version, STORE, API_CLIENT), architecture, key deps]</context>
   <files>[Key files across BE and FE, line counts, complexity flags]</files>
   <conventions>[BE_CONVENTIONS — sampled controller/usecase/serializer/spec patterns; FE_CONVENTIONS — sampled components/hooks/interfaces; omit FE block if FRONTEND_ROOT=none]</conventions>
@@ -56,7 +63,7 @@ Read silently based on `BE_FRAMEWORK`:
     - Note critical paths with no specs/tests.
     - Flag BE/FE contract mismatches (response shape vs TS interfaces).
   </constraints>
-</prompt>
+</analysis>
 ```
 
 ## Phase 2 — Report

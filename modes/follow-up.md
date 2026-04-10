@@ -46,30 +46,47 @@ Read config.
 ```
 ⛔ This PR wasn't authored by you. /dev-agent follow-up only works on your own PRs.
 ```
+Skip the dashboard and go straight to Phase 1 for that single PR.
 
-**No link:** resolve current user login, then fetch open PRs:
+**No link:** resolve current user login, then fetch all open PRs authored by you:
 ```bash
 CURRENT_USER=$(gh api user --jq '.login')
-gh api "repos/{REPO}/pulls?state=open" --jq "[.[] | select(.user.login == \"$CURRENT_USER\") | {number, title, html_url, created_at}]"
+gh api "repos/{REPO}/pulls?state=open&per_page=50" --jq "[.[] | select(.user.login == \"$CURRENT_USER\")]"
 ```
-Filter out already-approved PRs. Sort remaining PRs by `days_open` descending (oldest first). Present a grouped table before nudging:
+
+For each PR, collect the following health data:
+- `days_open` — days since `created_at`
+- `days_since_activity` — days since `updated_at`
+- `ci_status` — fetch latest check-run conclusions: `gh api repos/{REPO}/commits/{head_sha}/check-runs --jq '[.check_runs[] | .conclusion] | if any(. == "failure") then "failing" elif any(. == null) then "pending" else "passing" end'`
+- `review_count` — number of submitted reviews: `gh api repos/{REPO}/pulls/{pr_number}/reviews --jq '[.[] | select(.state != "DISMISSED")] | length'`
+- `unresolved_threads` — `gh api repos/{REPO}/pulls/{pr_number}/comments --jq '[.[] | select(.position != null)] | length'` (approximate)
+- `approved` — `gh api repos/{REPO}/pulls/{pr_number}/reviews --jq '[.[] | select(.state == "APPROVED")] | length > 0'`
+
+Filter out already-approved PRs (`approved = true`). Sort remaining PRs by `days_open` descending (oldest first).
+
+**Show PR dashboard** before nudging — always display this, even when only one PR matches:
 ```
-Open PRs queued for nudge (oldest first):
-| # | PR | Days Open | Last Activity |
-|---|-----|-----------|---------------|
-| 1 | #519 — Add export endpoint | 12 days | 3 days ago |
-| 2 | #507 — Fix login redirect | 6 days | 1 day ago |
+## Your Open PRs
+| # | PR | Days Open | Last Activity | CI | Reviews | Unresolved |
+|---|-----|-----------|---------------|-----|---------|------------|
+| 1 | #519 — Add export endpoint | 12d | 3d ago | ✅ passing | 1 | 2 threads |
+| 2 | #507 — Fix login redirect | 6d | 1d ago | ❌ failing | 0 | 0 threads |
+| 3 | #501 — Refactor auth | 2d | 4h ago | ⏳ pending | 0 | 0 threads |
+
+Nudging all 3 in order above. Reply with PR numbers to skip any (e.g. "skip 2"), or 'yes' to proceed.
 ```
-Process each sequentially in this order.
+Wait for response before nudging. If user skips any PRs, remove them from the list.
 
 ## Phase 1 — Status Check
 Skip if merged, closed, or already approved.
 
-For each qualifying PR, fetch staleness data from the PR API response:
+For each qualifying PR, use the health data already collected in Phase 0 (do not re-fetch):
 - `days_open` — days since `created_at`
 - `days_since_activity` — days since `updated_at`
+- `ci_status` — as fetched above
+- `unresolved_threads` — as fetched above
 
-Store both for use in the composed message.
+If `ci_status = failing`: weave CI failure into the nudge naturally ("heads up, CI is also failing — might be worth a look while reviewing").
 
 ## Phase 2 — Find or Create Slack Thread
 Using Slack MCP only. Search `#{slack_channel}` in order — stop at first match:

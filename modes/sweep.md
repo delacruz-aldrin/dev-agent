@@ -32,6 +32,17 @@ Pulls all open tickets assigned to you from Jira, lets you set priority order, t
 ## Phase 0 — Setup + Board Scan
 Read config. Run Backend Detection. Run Frontend Detection.
 
+**MCP pre-flight:** run both checks before any further steps. If either fails, stop immediately.
+
+- **Atlassian MCP:** fetch project metadata for `{jira_project}` (cloudId = `{jira_domain}`). Failure:
+  ```
+  ⛔ Atlassian MCP unreachable. Check authentication before continuing.
+  ```
+- **Slack MCP:** look up `#{slack_channel}`. Failure:
+  ```
+  ⛔ Slack MCP unreachable. Check authentication before continuing.
+  ```
+
 Detect `--manual` flag. If present: parse the comma-separated descriptions into a `MANUAL_ITEMS` list. Route each item to fix or build based on description keywords (verbs like "fix", "bug", "broken", "broken" → fix mode; all others → build mode). Then present the routing plan and require confirmation before continuing:
 ```
 Manual sweep — routing plan:
@@ -55,8 +66,32 @@ If checkout fails (uncommitted changes), stop:
 
 **Checkpoint:** Check for a `.claude/sweep-checkpoint.json` in the project root. If it exists:
 - Read it and display: "Found a previous sweep checkpoint. The following tickets were already completed: [list]. Resume from where it left off? Reply 'yes' or 'no' (no = start fresh)."
-- If 'yes': skip already-completed tickets in Phase 2. If 'no': delete the file and start fresh.
-- If no file: create it as `{ "completed": [] }` before processing begins. Also ensure `.claude/sweep-checkpoint.json` is listed in `.gitignore` — if not, append it silently.
+- If 'yes': skip already-completed tickets in Phase 2. For any ticket in `in_progress`, resume from the step after `last_milestone` (see milestone table in Phase 2). If the checkpoint includes a `detection_cache`, load it directly — skip re-running Backend/Frontend Detection. If 'no': delete the file and start fresh.
+- If no file: create it with the initial structure below before processing begins. Also ensure `.claude/sweep-checkpoint.json` is listed in `.gitignore` — if not, append it silently.
+
+Initial checkpoint structure (written at the start of Phase 0, updated throughout):
+```json
+{
+  "completed": [],
+  "in_progress": null,
+  "detection_cache": {
+    "BE_FRAMEWORK": "rails",
+    "FRONTEND_ROOT": "front/",
+    "STORE": "tanstack-query",
+    "API_CLIENT": "orval",
+    "BE_TEST_CMD": "bundle exec rspec",
+    "FE_TEST": "vitest",
+    "FE_LINT": "biome"
+  }
+}
+```
+Write `detection_cache` immediately after Backend/Frontend Detection completes in Phase 0. On resume, if `detection_cache` is present, restore all variables from it and skip re-running detection. Invalidate the cache (re-run detection and overwrite) if `package.json`, `Gemfile`, or `go.mod` has been modified since the checkpoint was written — compare file mtimes using `stat`.
+
+**Print Session State** before querying tickets:
+```
+## Session State
+BE_FRAMEWORK={value} | FRONTEND_ROOT={value} | STORE={value} | API_CLIENT={value}
+```
 
 Query tickets via Atlassian MCP (cloudId = `{jira_domain}`). Expand `{jira_project}` using JQL Project Expansion from SKILL.md (e.g. `MULTI,HQA` → `project in (MULTI, HQA)`). Try JQL in order until results:
 1. `{project_clause} AND assignee = currentUser() AND status in ("To Do", "In Progress") AND issuetype in (Bug, Story, Task, Improvement, Sub-task)`
@@ -96,21 +131,31 @@ Route: Bug → fix mode, everything else → build mode. For each ticket:
 3. PR creation is part of fix/build — verify labels, milestone, reviewer via `gh api` — if fails: note in report and continue
 4. Transition to "For Review" via Atlassian MCP — if fails: note in report and continue
 5. Run **Shared: Post Slack Thread** — look up `{slack_group}` once, reuse for all tickets. Each ticket must use a different angle.
-6. **Update checkpoint:** write progress to `.claude/sweep-checkpoint.json` after every significant milestone — not just on ticket completion. Checkpoint structure:
+6. **Update checkpoint:** write progress to `.claude/sweep-checkpoint.json` after every named milestone — not just on ticket completion. Checkpoint structure:
    ```json
    {
      "completed": ["HQA-1", "HQA-2"],
      "in_progress": {
        "key": "HQA-3",
-       "phase": 2,
-       "step": 6,
+       "last_milestone": "branch_created",
        "branch": "bug/HQA-3"
      }
    }
    ```
-   - Write `in_progress` at the start of each Phase 2 step (branch created, tests run, PR created, etc.)
+
+   Named milestones in order — write `last_milestone` immediately after each one completes:
+   | Milestone | Written after |
+   |---|---|
+   | `branch_created` | `git checkout -b` succeeds |
+   | `code_applied` | all file changes written |
+   | `tests_passed` | `{BE_TEST_CMD}` (and FE tests if applicable) green |
+   | `quality_checked` | lint + format clean |
+   | `pr_created` | `gh api` PR creation returns `PR_NUMBER` |
+   | `jira_transitioned` | Jira status updated to "For Review" |
+   | `slack_posted` | Slack thread posted |
+
    - On ticket completion: move key to `completed`, clear `in_progress`
-   - On resume: if `in_progress` exists, skip to the recorded phase/step rather than restarting the ticket from scratch
+   - On resume: if `in_progress` exists with a `last_milestone`, skip all steps up to and including that milestone for that ticket, then continue from the next one
 
 ## Phase 3 — Sweep Report
 ```

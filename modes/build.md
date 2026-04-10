@@ -30,6 +30,12 @@ Generates a complete feature implementation — backend endpoint, frontend integ
 ## Phase 0 — Setup
 Read config. Run Backend Detection. Run Frontend Detection.
 
+**Atlassian MCP pre-flight (Jira input only):** if input appears to be a Jira link or ticket key (matches `[A-Z]+-[0-9]+` or contains `{jira_domain}`), fetch project metadata for `{jira_project}` via Atlassian MCP (cloudId = `{jira_domain}`). If it fails, stop immediately:
+```
+⛔ Atlassian MCP unreachable. Check authentication before continuing.
+```
+Skip this check for manual descriptions.
+
 Switch to main:
 ```bash
 git checkout main && git pull origin main
@@ -55,9 +61,16 @@ Sample silently:
 - **Backend:** closest existing controller (+ usecase/interactor if `BE_FRAMEWORK=rails`), serializer/blueprint, spec
 - **Frontend:** per **Shared: Frontend Convention Sampling**
 
+**Print Session State** before proceeding to Phase 1:
+```
+## Session State
+BE_FRAMEWORK={value} | FRONTEND_ROOT={value} | STORE={value} | API_CLIENT={value}
+TICKET_KEY={value} | BRANCH={value}
+```
+
 ## Phase 1 — XML
 ```xml
-<prompt>
+<analysis>
   <context>[Stack (BE_FRAMEWORK, STORE, API_CLIENT), namespace, auth pattern, endpoint description]</context>
   <conventions>[Sampled BE + FE patterns]</conventions>
   <task>
@@ -83,7 +96,7 @@ Sample silently:
     - If no state update needed, note explicitly — don't add unnecessary state.
     - If purely BE ticket (no UI surface), note and skip FE steps.
   </constraints>
-</prompt>
+</analysis>
 ```
 
 ## Phase 2 — Execute

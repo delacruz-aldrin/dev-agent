@@ -39,9 +39,16 @@ Fetch unresolved threads only. If none: stop.
 
 Fetch linked Jira ticket for context: scan the PR body for a Jira URL matching `{jira_domain}`. If found, fetch ticket via Atlassian MCP (cloudId = `{jira_domain}`) — description and acceptance criteria. Store as `JIRA_REQUIREMENTS`. If not found: `JIRA_REQUIREMENTS=none`.
 
+**Print Session State** before proceeding to Phase 1:
+```
+## Session State
+BE_FRAMEWORK={value} | FRONTEND_ROOT={value} | STORE={value} | API_CLIENT={value}
+PR_NUMBER={value} | JIRA_REQUIREMENTS={found/none}
+```
+
 ## Phase 1 — XML
 ```xml
-<prompt>
+<analysis>
   <context>[PR title, branch, author, thread count]</context>
   <requirements>[Jira acceptance criteria if JIRA_REQUIREMENTS≠none; omit block if none]</requirements>
   <comments>[Reviewer, file, line, body, suggestion per thread]</comments>
@@ -57,7 +64,7 @@ Fetch linked Jira ticket for context: scan the PR body for a Jira URL matching `
     - Acknowledge valid changes genuinely. Decline with friendly explanation.
     - Partially valid: apply valid part, explain the rest.
   </constraints>
-</prompt>
+</analysis>
 ```
 
 ## Phase 2 — Execute

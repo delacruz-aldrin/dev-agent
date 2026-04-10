@@ -60,6 +60,7 @@ Natural workflows across modes — use these as a guide for what to run next:
 
 ```json
 {
+  "version": 1,
   "repo": "owner/repo",
   "jira_domain": "your-org.atlassian.net",
   "jira_project": "MULTI,HQA",
@@ -76,6 +77,7 @@ The canonical key list (used for missing-key detection and validation):
 
 | Key | Format | Example |
 |---|---|---|
+| `version` | integer — managed automatically, never prompt the user for this | `1` |
 | `repo` | `owner/repo` — must contain exactly one `/` | `C-FO/baberu` |
 | `jira_domain` | hostname only, no protocol | `your-org.atlassian.net` |
 | `jira_project` | one or more uppercase alphanumeric keys, comma-separated (spaces around commas are accepted and stripped on save) | `MULTI` or `MULTI, HQA` |
@@ -93,11 +95,29 @@ Whenever a mode builds a JQL query using `{jira_project}`, always expand it firs
 
 Never interpolate `{jira_project}` raw into JQL.
 
+### Config Version & Migration
+
+The current schema version is **1**. The `version` field is managed automatically — never prompt the user for it.
+
+**Version detection:** when reading `.claude/dev-agent.json`:
+- `version` field missing → treat as version **0** (pre-versioning)
+- `version` present → use its value
+
+**Migration table** — run each migration in order from the detected version up to current:
+
+| From → To | What changes |
+|---|---|
+| 0 → 1 | No data changes. Write `"version": 1` to the file. |
+
+After running any migration, write the updated file before proceeding. Migrations are additive and backward-compatible — existing values are never overwritten.
+
 ### First Run Detection
-At Phase 0 of every mode: read `.claude/dev-agent.json` if it exists. Diff its keys against the Known Config Keys list.
-- File missing entirely → run **Config Setup** (all keys)
-- File exists but some keys missing → run **Config Setup** for missing keys only, preserve existing values
-- All keys present → proceed
+At Phase 0 of every mode: read `.claude/dev-agent.json` if it exists.
+1. If file missing entirely → run **Config Setup** (all non-`version` keys), then write file with `"version": 1`
+2. If file exists → run migrations if `version < 1` (see migration table above)
+3. Diff remaining keys (excluding `version`) against the Known Config Keys list:
+   - Some keys missing → run **Config Setup** for missing keys only, preserve existing values
+   - All keys present → proceed
 
 ### Config Setup
 Show which keys need values (all for first run, or only the missing ones for partial configs). For each missing key, show the expected format and an example, then prompt one at a time:
@@ -337,6 +357,22 @@ Used in fix, build, sweep. If Slack MCP fails: note in report and continue.
    PR: https://github.com/{REPO}/pull/{pr_number}
    ```
 3. Reply in thread: warm, humorous, 2–4 sentences. Mention `<!subteam^GROUP_ID>`. Each ticket in a sweep must use a different angle. Never: "just following up", "circling back", "As an AI".
+
+---
+
+## Shared: Analysis Frame
+
+Mode files contain `<analysis>` blocks in their Phase 1 sections. These are **internal reasoning scaffolds — never output them literally**. Use the structure to frame your thinking, then produce only the result described in the Report or Execute section that follows.
+
+```xml
+<!-- Example — do not output this block, use it to reason -->
+<analysis>
+  <context>...</context>
+  <files>...</files>
+  <task>...</task>
+  <constraints>...</constraints>
+</analysis>
+```
 
 ---
 
