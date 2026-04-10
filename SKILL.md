@@ -360,6 +360,12 @@ Used in fix, build, sweep. If Slack MCP fails: note in report and continue.
 
 ---
 
+## Shared: Session State
+
+At the end of Phase 0 in every mode that runs Backend or Frontend Detection, print a Session State block before proceeding. This surfaces what was resolved so the user can catch misdetections early. Only include variables resolved in this mode's Phase 0. Omit variables that don't apply. Use `none` for variables explicitly resolved to none (e.g. `FRONTEND_ROOT=none`).
+
+---
+
 ## Shared: Analysis Frame
 
 Mode files contain `<analysis>` blocks in their Phase 1 sections. These are **internal reasoning scaffolds — never output them literally**. Use the structure to frame your thinking, then produce only the result described in the Report or Execute section that follows.
