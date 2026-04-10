@@ -14,7 +14,7 @@ A twelve-mode Claude Code skill that automates the full dev workflow — from Ji
 | `/dev-agent verify` | `[ticket] [PR]` or `[ticket] [PR] --comment` | Pre-merge root cause check — independently traces the code path and returns a SAFE TO MERGE / DO NOT MERGE / NEEDS DISCUSSION verdict. Add `--comment` to post findings as a GitHub review. |
 | `/dev-agent respond` | `[your PR]` | Addresses all open review comments (auto-applies GitHub Suggestions), pushes updates, polls required CI checks, then re-requests review |
 | `/dev-agent review` | `[colleague's PR]` | Reviews a colleague's PR with urgency calibration, stale thread escalation, new pattern detection, inline comments, verdict, and Slack notification |
-| `/dev-agent follow-up` | `[PR]` or _(none for all)_ | Posts Slack nudges oldest-first to open PR threads; escalates to a GitHub comment for PRs open 7+ days |
+| `/dev-agent follow-up` | `[PR]` or _(none for all)_ | Shows a PR health dashboard (CI status, review count, unresolved threads) before nudging; posts Slack nudges oldest-first; escalates to a GitHub comment for PRs open 7+ days |
 | `/dev-agent setup <url> [url2 ...]` | Confluence, Jira, or any web URL | Reads setup docs, deduplicates steps, snapshots machine state, executes, and verifies |
 | `/dev-agent setup --rollback [id]` | Snapshot ID or _(none to list)_ | Rolls back a previous setup session — restores config files, uninstalls brew/npm/pip packages, removes created files |
 | `/dev-agent setup --diff <id1> <id2>` | Two snapshot IDs to compare | Compares two setup snapshots side by side — shows added/removed packages and config file changes between sessions |
@@ -45,8 +45,8 @@ Natural workflows — what to run next:
 
 - [Claude Code](https://claude.ai/code) installed and authenticated
 - `gh` CLI authenticated (`gh auth status`)
-- Atlassian MCP configured (for Jira access)
-- Slack MCP configured (for Slack posting)
+- Atlassian MCP configured (for Jira access) — verified at startup for Jira-dependent modes
+- Slack MCP configured (for Slack posting) — verified at startup for sweep
 
 
 ## Install
@@ -103,6 +103,7 @@ git add .claude/dev-agent.json && git commit -m "chore: add dev-agent config"
 
 | Key | Description | Example |
 |---|---|---|
+| `version` | Schema version — managed automatically, never set this manually | `1` |
 | `repo` | GitHub repo in `owner/repo` format | `C-FO/baberu` |
 | `jira_domain` | Jira hostname, no protocol | `your-org.atlassian.net` |
 | `jira_project` | One or more Jira project keys, comma-separated (spaces around commas are fine) | `HQA` or `MULTI, HQA` |
