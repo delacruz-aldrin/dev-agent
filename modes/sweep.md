@@ -80,8 +80,13 @@ Initial checkpoint structure (written at the start of Phase 0, updated throughou
     "STORE": "tanstack-query",
     "API_CLIENT": "orval",
     "BE_TEST_CMD": "bundle exec rspec",
+    "BE_LINT_FIX": "bundle exec rubocop -a",
+    "BE_LINT_CHECK": "bundle exec rubocop",
     "FE_TEST": "vitest",
-    "FE_LINT": "biome"
+    "FE_TEST_CMD": "yarn test",
+    "FE_LINT": "biome",
+    "FE_LINT_FIX": "yarn lint:fix",
+    "FE_LINT_CHECK": "yarn lint"
   }
 }
 ```

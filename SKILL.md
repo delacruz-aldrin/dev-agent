@@ -197,11 +197,26 @@ Check in order: `front/`, `frontend/`, `app/frontend/`, `client/`, `src/` — us
 
 **`API_CLIENT`:** `orval` in devDeps → `orval` | `@hey-api/openapi-ts` → `hey-api` | else → `manual`
 
-**`FE_TEST`:** `vitest` → `vitest` (cmd: `yarn test`) | `jest` or `@jest/core` → `jest` (cmd: `yarn test`) | else → `none`
+**`FE_TEST`:** `vitest` → `vitest` | `jest` or `@jest/core` → `jest` | else → `none`
 
-**`FE_LINT`:** `@biomejs/biome` → `biome` (fix: `yarn lint:fix`, check: `yarn lint`) | `eslint` → `eslint` (fix: `yarn lint --fix`, check: `yarn lint`) | else → `none`
+**`FE_LINT`:** `@biomejs/biome` → `biome` | `eslint` → `eslint` | else → `none`
 
 **`API_GEN_CMD`:** If `API_CLIENT=orval`: check Makefile and `package.json` scripts for `generate-client` or `generate-all`. Store first match.
+
+### Step 3 — Resolve FE Commands
+
+After detecting `FE_TEST` and `FE_LINT`, bind the following as named session variables:
+
+| Variable | biome | eslint | none |
+|---|---|---|---|
+| `FE_LINT_FIX` | `yarn lint:fix` | `yarn lint --fix` | — |
+| `FE_LINT_CHECK` | `yarn lint` | `yarn lint` | — |
+
+| Variable | vitest | jest | none |
+|---|---|---|---|
+| `FE_TEST_CMD` | `yarn test` | `yarn test` | — |
+
+Store `FE_TEST_CMD`, `FE_LINT_FIX`, and `FE_LINT_CHECK` as session variables alongside `FE_TEST` and `FE_LINT`. These are the runnable commands used by **Shared: Run Quality Checks** and mode files. Also include them in the sweep `detection_cache` alongside `FE_TEST` and `FE_LINT`.
 
 ---
 
