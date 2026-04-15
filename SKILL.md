@@ -525,7 +525,7 @@ Write at the **end** of the mode, after all work is done. If the write fails: no
 
 ## Shared: Analysis Frame
 
-Mode files contain `<analysis>` blocks in their Phase 1 sections. These are **internal reasoning scaffolds — never output them literally**. Use the structure to frame your thinking, then produce only the result described in the Report or Execute section that follows.
+Mode files contain `<analysis>` blocks in their Phase 1 sections. These are **internal reasoning scaffolds — never output them literally**. Use the structure to frame your thinking, then produce only the result described in the Report or Execute section that follows. Do not output any XML tag text from these blocks — not `<analysis>`, `</analysis>`, `<context>`, `<files>`, `<task>`, `<constraints>`, or any other tag name from the scaffolds.
 
 ```xml
 <!-- Example — do not output this block, use it to reason -->
