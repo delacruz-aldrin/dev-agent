@@ -78,6 +78,8 @@ Run **Shared: Create PR** with `TICKET_LINK`. `DRAFT_PR` is already set from Pha
 
 Run **Shared: Post Slack Thread** — if Slack MCP fails: note in report and continue. Skip if `DRAFT_PR=true` (draft PRs are not ready for review).
 
+Write context per **Shared: Session Context** — if `TICKET_LINK≠none`, write the `build` key to the per-ticket context file: `pr_number`, `pr_url`, `branch` (`CURRENT_BRANCH`), `timestamp`. This allows `verify` to find the PR context when run after `pr` mode. Skip if `TICKET_LINK=none` (no ticket key to key the file on) or if the write fails (note in report, continue).
+
 ## Phase 2 — Report
 ```
 ## PR — [title]
