@@ -371,11 +371,17 @@ At the end of Phase 0 in every mode that runs Backend or Frontend Detection, pri
 Persists findings across mode runs for the same ticket so modes can skip redundant re-detection and hand off results directly.
 
 ### Context File Location
-`.claude/dev-agent/context/{TICKET_KEY}.json`
+**Per-ticket:** `.claude/dev-agent/context/{TICKET_KEY}.json`
 - Keyed by ticket key (e.g. `HQA-123`) or branch slug for manual inputs (e.g. `manual-page-list-column-widths`)
-- Stored in `.claude/` — gitignored, local only, never committed
+
+**Global audit:** `.claude/dev-agent/context/_audit.json`
+- Not ticket-scoped — written by `audit`, read by `fix`
+
+Both stored in `.claude/` — gitignored, local only, never committed
 
 ### Schema
+
+**Per-ticket file:**
 ```json
 {
   "ticket": "HQA-123",
@@ -408,12 +414,30 @@ Persists findings across mode runs for the same ticket so modes can skip redunda
 }
 ```
 
+**Global audit file (`_audit.json`):**
+```json
+{
+  "audited_at": "<ISO8601>",
+  "findings": [
+    {
+      "hash": "<8-char hash>",
+      "severity": "high",
+      "file": "path/to/file.rb",
+      "summary": "<one-line description of the risk>"
+    }
+  ]
+}
+```
+`severity`: `"high"` for 🔴, `"medium"` for 🟡. `file`: the primary file implicated by the finding.
+
 ### Read Rules (Phase 0)
 Check for `.claude/dev-agent/context/{TICKET_KEY}.json` at the start of Phase 0:
 - If missing: proceed with full detection as normal
 - If present: print `[context] loaded HQA-123 (fix ran <N>m ago)` in the Session State block
 
 **Stack reuse:** use cached `stack` values and skip Backend/Frontend Detection only if both conditions hold: (1) `stack.lockfile_mtime` matches the current mtime of the relevant lockfile (Gemfile for rails, `{FRONTEND_ROOT}/package.json` for FE, `go.mod` for go), and (2) `stack.detected_at` is less than 7 days old. If lockfile mtime mismatches: re-detect, log `[context] stack re-detected (lockfile changed)`. If older than 7 days: re-detect, log `[context] stack cache expired (>7 days)`. On a clean cache hit: log `[context] stack reused from cache`.
+
+**Audit findings (fix):** read `_audit.json` if present. Apply two filters: (1) **recency gate** — skip entirely if `audited_at` is older than 14 days, log `[context] audit findings skipped (>14 days old)`; (2) **overlap filter** — from the remaining findings, keep only those whose `file` path matches any file in the current trace path. Store matching findings as `AUDIT_FINDINGS`. If non-empty, print `[context] N audit finding(s) matched traced files` in the Session State block.
 
 **Fix summary (verify):** use `fix` data as a trace hint only if `fix.branch` matches the PR's head branch.
 
@@ -426,6 +450,7 @@ Each mode merges its key into the context file — never replaces the entire fil
 
 | Mode | Writes |
 |---|---|
+| `audit` | `_audit.json` (global) — audited_at, all current findings (NEW + PERSISTED) with hash, severity, file, summary |
 | `fix` | `stack` (if re-detected), `fix` (root_cause, files_changed, callers_checked, side_effects, pr_number, pr_url, head_sha, timestamp, branch) |
 | `build` | `stack` (if re-detected) only — does not write a `fix` key |
 | `verify` | `verify` (verdict, blocking_findings, pr_number, timestamp) |

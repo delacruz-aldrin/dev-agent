@@ -78,6 +78,8 @@ After generating the report, write updated state back to `.claude/dev-agent-audi
 ```
 Include all current findings (NEW + PERSISTED). Drop RESOLVED findings.
 
+Write context per **Shared: Session Context** — write `_audit.json` with `audited_at` (now) and all current (NEW + PERSISTED) findings: hash, severity (`"high"` for 🔴, `"medium"` for 🟡), file (primary file implicated), summary (one-line description).
+
 If `PRIOR_STATE=true`: lead the report with: "Delta since last audit: N new, M persisted, P resolved."
 
 ```
