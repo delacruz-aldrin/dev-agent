@@ -422,6 +422,8 @@ Check for `.claude/dev-agent/context/{TICKET_KEY}.json` at the start of Phase 0:
 ### Write Rules
 Each mode merges its key into the context file — never replaces the entire file. Read first, update the relevant key, write back.
 
+**Concurrent-run protection:** before writing, check the file's current mtime. If it differs from the mtime recorded when you read it at Phase 0, another process has written to the file since your read. Log a warning in the report: `⚠️ Context file was modified since last read — writing anyway (last-write-wins).` Do not block or prompt — just note it.
+
 | Mode | Writes |
 |---|---|
 | `fix` | `stack` (if re-detected), `fix` (root_cause, files_changed, callers_checked, side_effects, pr_number, pr_url, head_sha, timestamp, branch) |
