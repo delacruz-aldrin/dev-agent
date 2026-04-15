@@ -517,6 +517,7 @@ Each mode merges its key into the context file — never replaces the entire fil
 | `build` | `stack` (if re-detected); `build` key — `pr_number`, `pr_url`, `branch`, `timestamp` (so that verify and refix can reference the PR after a build run) |
 | `verify` | `verify` (verdict, blocking_findings, pr_number, timestamp) |
 | `refix` | `stack` (if re-detected); increments `refix_count` (treat as 0 if field is missing — older context files may not have it); clears `fix`, `build`, and `verify` keys |
+| `refactor` | Does not write to per-ticket context (not ticket-scoped). When invoked via `--from-audit <n>`: directly modifies audit state files — see `modes/refactor.md` Phase 3. |
 
 Write at the **end** of the mode, after all work is done. If the write fails: note in report and continue — never block on context writes.
 
