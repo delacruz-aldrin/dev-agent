@@ -132,7 +132,7 @@ Wait for final confirmation before starting Phase 2.
 ## Phase 2 — Sequential Processing
 Route: Bug → fix mode, everything else → build mode. For each ticket:
 
-**Gates suppressed in sweep mode** — sweep is autonomous; do not pause at interactive gates. The following gates defined in fix and build are skipped when running inside sweep:
+**Gates suppressed in sweep mode** — sweep is autonomous; do not pause at interactive gates. Set session variable `SWEEP_MODE=active` at the start of Phase 2 (before the first ticket). The following gates defined in fix and build check this variable and skip when it is set:
 - Pre-commit review gate ("Ready to commit?")
 - Auto-verify offer (refix only)
 
