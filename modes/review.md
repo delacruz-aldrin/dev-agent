@@ -27,7 +27,7 @@ Automatically detects whether this is a first review or a follow-up review based
 ---
 
 ## Phase 0 — Setup + Ownership Check
-Read config.
+Read config. Run Backend Detection. Run Frontend Detection. Store results as session variables — these are required for BE/FE contract checks and test coverage analysis in Phase 1.
 
 **Atlassian MCP pre-flight:** fetch project metadata for `{jira_project}` via Atlassian MCP (cloudId = `{jira_domain}`). If it fails, stop immediately:
 ```
@@ -70,6 +70,7 @@ If ALL threads = "not replied + not updated" → stop: "Nothing to follow up on 
 **Print Session State** before proceeding to Phase 1:
 ```
 ## Session State
+BE_FRAMEWORK={value} | FRONTEND_ROOT={value} | STORE={value} | API_CLIENT={value}
 PR_NUMBER={value} | REVIEW_MODE={first_review/follow_up} | DAYS_OPEN={value}
 [context] N pre-existing audit finding(s) in changed files   ← only if REVIEW_AUDIT_FINDINGS non-empty
 ```
