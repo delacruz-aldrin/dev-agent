@@ -39,11 +39,14 @@ Fetch unresolved threads only. If none: stop.
 
 Fetch linked Jira ticket for context: scan the PR body for a Jira URL matching `{jira_domain}`. If found, fetch ticket via Atlassian MCP (cloudId = `{jira_domain}`) — description and acceptance criteria. Store as `JIRA_REQUIREMENTS`. If not found: `JIRA_REQUIREMENTS=none`.
 
+Read `_audit.json` per **Shared: Session Context** — apply recency gate (14 days) and overlap filter against the PR's changed files. Store matching findings as `RESPOND_AUDIT_FINDINGS`. These are pre-existing risks, not introduced by the PR — they inform responses but do not affect how comments are addressed.
+
 **Print Session State** before proceeding to Phase 1:
 ```
 ## Session State
 BE_FRAMEWORK={value} | FRONTEND_ROOT={value} | STORE={value} | API_CLIENT={value}
 PR_NUMBER={value} | JIRA_REQUIREMENTS={found/none}
+[context] N pre-existing audit finding(s) in changed files   ← only if RESPOND_AUDIT_FINDINGS non-empty
 ```
 
 ## Phase 1 — XML
@@ -118,4 +121,5 @@ After all threads:
 ## Respond Report — [PR title]
 ### Comments Addressed | ### Test Suite | ### Linting & Formatting
 ### CI Status | ### Re-review Requested | ### Jira Status
+### Pre-existing Audit Findings (omit section if RESPOND_AUDIT_FINDINGS empty)
 ```
