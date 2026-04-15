@@ -97,6 +97,13 @@ If `PRIOR_STATE=true`: lead the report with: "Delta since last audit: N new, M p
 ```
 
 ## Phase 3 — Ticket Creation
+**Atlassian MCP pre-flight:** before asking the user anything, verify the MCP is reachable — fetch project metadata for `{jira_project}` via Atlassian MCP (cloudId = `{jira_domain}`). If it fails:
+```
+⚠️  Atlassian MCP unreachable — cannot create Jira tickets.
+Findings are listed above. Run /dev-agent audit again or fix MCP auth to file tickets.
+```
+Stop Phase 3 here (do not ask further ticket questions). The audit report from Phase 2 is still complete and useful.
+
 Show all 🔴 and 🟡 findings numbered. Ask:
 1. "Which findings to create as Jira tickets? Reply with numbers or 'all'."
 
