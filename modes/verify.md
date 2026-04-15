@@ -38,7 +38,7 @@ Read config. Accept `/dev-agent verify [Jira link] [PR link] [--comment]`. Detec
 ⛔ Atlassian MCP unreachable. Check authentication before continuing.
 ```
 
-Read context per **Shared: Session Context** — if stack is cached and the lockfile mtime is unchanged, skip detection and use cached values; otherwise run Backend Detection and Frontend Detection. If `fix` key is present and `fix.branch` matches the PR's head branch, store `FIX_CONTEXT_AVAILABLE=true` to use as a trace hint in Phase 1.
+Read context per **Shared: Session Context** — if stack is cached and the lockfile mtime is unchanged, skip detection and use cached values; otherwise run Backend Detection and Frontend Detection. If `fix` key is present and `fix.branch` matches the PR's head branch, store `FIX_CONTEXT_AVAILABLE=true` to use as a trace hint in Phase 1. If `fix` key is absent but `build` key is present and `build.branch` matches the PR's head branch, store `BUILD_CONTEXT_AVAILABLE=true` (use `build.pr_url` as context — no root_cause is available, but the branch match confirms the build run produced this PR).
 
 Read `_audit.json` per **Shared: Session Context** — apply recency gate (14 days) and overlap filter against the PR's changed files (from `.../files`). Store matching findings as `VERIFY_AUDIT_FINDINGS`. These are pre-existing risks, not introduced by the PR.
 
@@ -61,11 +61,14 @@ If a prior verify report exists: note `PRIOR_VERIFY=true` and store the prior fi
 BE_FRAMEWORK={value} | FRONTEND_ROOT={value} | STORE={value} | API_CLIENT={value}
 PR_NUMBER={value} | POST_COMMENT={true/false} | PRIOR_VERIFY={true/false}
 [context] fix summary loaded (branch fix/HQA-123, N files)         ← only if FIX_CONTEXT_AVAILABLE=true
+[context] build context loaded (branch feat/HQA-123)               ← only if BUILD_CONTEXT_AVAILABLE=true
 [context] N pre-existing audit finding(s) in changed files         ← only if VERIFY_AUDIT_FINDINGS non-empty
 ```
 
 ## Phase 1 — XML
 If `FIX_CONTEXT_AVAILABLE=true`: seed `<context>` with `fix.root_cause` and `fix.files_changed` from context — use as a starting point for the live trace, not as ground truth.
+
+If `BUILD_CONTEXT_AVAILABLE=true` (and `FIX_CONTEXT_AVAILABLE=false`): note in `<context>` that the PR was produced by a build run — there is no prior root_cause; trace from scratch using the ticket description and PR diff.
 
 ```xml
 <analysis>
