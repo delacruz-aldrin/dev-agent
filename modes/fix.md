@@ -49,8 +49,10 @@ If checkout fails (uncommitted changes), stop:
 
 **Breaking-change guard:** after pulling, check if any files in the traced path were modified by the pull:
 ```bash
-git diff HEAD@{1} HEAD --name-only
+git diff ORIG_HEAD HEAD --name-only
 ```
+(`ORIG_HEAD` is set by `git pull` to the pre-pull tip — this reliably shows what the pull changed regardless of which branch was checked out before. If `ORIG_HEAD` does not exist — e.g. the repo is freshly cloned or the pull was a no-op — skip this check.)
+
 If the pull changed files that overlap with the likely trace path (routes, controllers, models, serializers, key FE files), warn: "main was updated and the following traced files changed: [list]. Review these changes before branching? (yes to pause / no to continue)". Wait for response.
 
 Detect input:
