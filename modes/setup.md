@@ -100,6 +100,8 @@ Snapshot structure:
   "source_docs": ["url1", "url2"],
   "brew_packages_before": [],
   "asdf_plugins_before": {},
+  "npm_globals_before": [],
+  "pip_packages_before": [],
   "config_files": {
     "~/.zshrc": "<original content>",
     "~/.bashrc": "<original content if exists>",
