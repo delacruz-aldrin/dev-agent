@@ -108,7 +108,9 @@ Do not proceed to Phase 2 until the summary and classification are complete.
 
 ## Phase 2 — Re-diagnosis
 
-### If `REJECTION_TYPE=wrong_root_cause`
+**If :** execute the  branch below in full (re-diagnose from scratch), then ALSO run the Side Effect Map steps from the  branch as an additional step. Both the fresh diagnosis AND the side-effect patches apply to Phase 3.
+
+### If 
 
 Trace the flow fresh using `BE_ARCH_TRACE`. Also trace frontend based on `STORE` (same as fix mode).
 
