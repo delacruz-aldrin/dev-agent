@@ -63,7 +63,7 @@ Fetch all comments + replies. Identify files changed since prior review. Per thr
 - Not replied + updated → re-assess, note missing reply
 - Not replied + not updated → flag outstanding, do not comment
 
-**Stale thread escalation:** for any thread in "not replied + not updated" state, count how many consecutive follow-up runs it has been in that state (check prior review bodies for the same thread ID appearing as outstanding). If a thread has been outstanding across 3+ follow-up runs without any author response: post a GitHub PR comment via `gh api repos/{REPO}/issues/{pr_number}/comments` tagging the PR author: `@{author_login} — thread on {file}:{line} has been outstanding for {n} follow-ups with no response. Is this still relevant?`
+**Stale thread escalation:** for any thread in "not replied + not updated" state, count how many consecutive follow-up runs it has been in that state. Count by fetching prior review bodies authored by the current user (`gh api repos/{REPO}/pulls/{pr_number}/reviews --jq '.[] | select(.user.login == "{CURRENT_USER}" and (.body | contains("outstanding")))'`) and scanning for the same thread file+line appearing in the **outstanding** section of each prior review body. Each review body that lists the thread as outstanding counts as one consecutive run. If a thread has been outstanding across 3+ consecutive follow-up runs without any author response: post a GitHub PR comment via `gh api repos/{REPO}/issues/{pr_number}/comments` tagging the PR author: `@{author_login} — thread on {file}:{line} has been outstanding for {n} follow-ups with no response. Is this still relevant?`
 
 If ALL threads = "not replied + not updated" → stop: "Nothing to follow up on yet."
 
