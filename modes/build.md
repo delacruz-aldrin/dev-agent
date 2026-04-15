@@ -42,7 +42,7 @@ git checkout {base_branch} && git pull origin {base_branch}
 ```
 If checkout fails (uncommitted changes), stop:
 ```
-⛔ Uncommitted changes detected. Stash (`git stash`) or commit before running /dev-agent build.
+⛔ Could not switch to {base_branch}. If you have uncommitted changes, stash (`git stash`) or commit them first. Otherwise check that {base_branch} exists and the remote is reachable.
 ```
 
 Detect input (Jira link or manual). Derive `TICKET_KEY`.

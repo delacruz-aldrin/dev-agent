@@ -44,7 +44,7 @@ git checkout {base_branch} && git pull origin {base_branch}
 ```
 If checkout fails (uncommitted changes), stop:
 ```
-⛔ Uncommitted changes detected. Stash (`git stash`) or commit before running /dev-agent fix.
+⛔ Could not switch to {base_branch}. If you have uncommitted changes, stash (`git stash`) or commit them first. Otherwise check that {base_branch} exists and the remote is reachable.
 ```
 
 **Breaking-change guard:** after pulling, check if any files in the traced path were modified by the pull:
