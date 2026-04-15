@@ -80,12 +80,13 @@ For each thread:
 
 After all threads:
 1. Run `{BE_TEST_CMD}` — revert all changes if fails
-2. Run **Shared: Run Quality Checks** — revert if lint/format still fails after auto-fix
-3. **Pre-push review gate:** show a table of all files changed and the type of change (applied suggestion / manual edit), then ask: "Push these changes and re-request review? (yes / review changes / revert all)".
+2. If `FE_TEST≠none` and any frontend files were changed: run `{FE_TEST_CMD}` — if tests fail after auto-fix: revert FE changes, note in report, continue with BE-only response
+3. Run **Shared: Run Quality Checks** — revert if lint/format still fails after auto-fix
+4. **Pre-push review gate:** show a table of all files changed and the type of change (applied suggestion / manual edit), then ask: "Push these changes and re-request review? (yes / review changes / revert all)".
    - `yes` → proceed
    - `review changes` → show full diff, then re-ask
    - `revert all` → revert all changes, note in report, stop
-4. Commit and push:
+5. Commit and push:
    ```bash
    git add {every file changed addressing comments}   # list files explicitly — never use git add . or git add -A
    git commit -m "chore: address PR review comments"
