@@ -47,6 +47,8 @@ Check for prior dev-agent review via `gh api repos/{REPO}/pulls/{pr_number}/revi
 ### First Review Mode
 Fetch PR diff, commits, description, additions/deletions, linked Jira ticket (Atlassian MCP), sample conventions.
 
+Read `_audit.json` per **Shared: Session Context** — apply recency gate (14 days) and overlap filter against the PR's changed files. Store matching findings as `REVIEW_AUDIT_FINDINGS`. These are pre-existing risks, not introduced by the PR — they inform the review but do not affect the verdict.
+
 **Urgency calibration:** fetch `created_at` from the PR. Compute `days_open = today - created_at`.
 - `days_open > 7`: prepend to the report header: "⚠️ This PR has been open for {days_open} days." Use an urgent tone in the Slack notification.
 - `days_open > 3`: note in report: "PR has been waiting {days_open} days." Normal tone.
@@ -69,6 +71,7 @@ If ALL threads = "not replied + not updated" → stop: "Nothing to follow up on 
 ```
 ## Session State
 PR_NUMBER={value} | REVIEW_MODE={first_review/follow_up} | DAYS_OPEN={value}
+[context] N pre-existing audit finding(s) in changed files   ← only if REVIEW_AUDIT_FINDINGS non-empty
 ```
 
 ## Phase 1 — XML
@@ -131,4 +134,5 @@ Slack to `#{slack_channel}`: find thread via targeted text search in order — f
 ### Convention Consistency | ### Logic | ### Security | ### Performance
 ### BE Test Coverage | ### FE Test Coverage | ### BE/FE Contract | ### PR Description
 ### New Patterns (omit section if none detected)
+### Pre-existing Audit Findings (omit section if REVIEW_AUDIT_FINDINGS empty)
 ```
