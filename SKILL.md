@@ -484,7 +484,7 @@ Both stored in `.claude/` — gitignored, local only, never committed
 ### Read Rules (Phase 0)
 Check for `.claude/dev-agent/context/{TICKET_KEY}.json` at the start of Phase 0:
 - If missing: proceed with full detection as normal
-- If present: print `[context] loaded HQA-123 (fix ran <N>m ago)` in the Session State block
+- If present: print `[context] loaded HQA-123 (fix ran <N>m ago)` in the Session State block. Also capture the file's current mtime for concurrent-run detection at write time — run `stat -f '%m' {filepath}` (macOS) or `stat -c '%Y' {filepath}` (Linux). Store the result as `CONTEXT_FILE_MTIME`.
 
 **Stack reuse:** use cached `stack` values and skip Backend/Frontend Detection only if both conditions hold: (1) `stack.lockfile_mtime` matches the current mtime of the relevant lockfile (Gemfile for rails, `{FRONTEND_ROOT}/package.json` for FE, `go.mod` for go), and (2) `stack.detected_at` is less than 7 days old. If lockfile mtime mismatches: re-detect, log `[context] stack re-detected (lockfile changed)`. If older than 7 days: re-detect, log `[context] stack cache expired (>7 days)`. On a clean cache hit: log `[context] stack reused from cache`.
 
