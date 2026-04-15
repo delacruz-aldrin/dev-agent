@@ -30,10 +30,11 @@ Diagnoses a bug and opens a PR with the fix, specs, and Slack notification.
 ## Phase 0 — Setup
 Read config. Read context per **Shared: Session Context** — if stack is cached and the lockfile mtime is unchanged, skip Backend/Frontend Detection and use cached values; otherwise run Backend Detection and Frontend Detection. Also read `_audit.json` per **Shared: Session Context** — apply recency and overlap filters after the trace path is known; store matches as `AUDIT_FINDINGS`.
 
-**Atlassian MCP pre-flight:** fetch project metadata for `{jira_project}` via Atlassian MCP (cloudId = `{jira_domain}`). If it fails, stop immediately:
+**Atlassian MCP pre-flight (Jira input only):** if input appears to be a Jira link or ticket key (matches `[A-Z]+-[0-9]+` or contains `{jira_domain}`), fetch project metadata for `{jira_project}` via Atlassian MCP (cloudId = `{jira_domain}`). If it fails, stop immediately:
 ```
 ⛔ Atlassian MCP unreachable. Check authentication before continuing.
 ```
+Skip this check for manual descriptions.
 
 Switch to main:
 ```bash
