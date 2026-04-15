@@ -51,7 +51,7 @@ If checkout fails (uncommitted changes), stop:
 ```bash
 git diff ORIG_HEAD HEAD --name-only
 ```
-(`ORIG_HEAD` is set by `git pull` to the pre-pull tip — this reliably shows what the pull changed regardless of which branch was checked out before. If `ORIG_HEAD` does not exist — e.g. the repo is freshly cloned or the pull was a no-op — skip this check.)
+(`ORIG_HEAD` is set by `git pull` to the pre-pull tip — this reliably shows what the pull changed regardless of which branch was checked out before. Detect absence with `git rev-parse ORIG_HEAD 2>/dev/null` — if the command exits non-zero or produces no output, `ORIG_HEAD` does not exist; skip this check. This can happen on a freshly cloned repo or when the pull was a no-op.)
 
 If the pull changed files that overlap with the likely trace path (routes, controllers, models, serializers, key FE files), warn: "main was updated and the following traced files changed: [list]. Review these changes before branching? (yes to pause / no to continue)". Wait for response.
 
