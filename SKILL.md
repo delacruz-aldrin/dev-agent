@@ -143,7 +143,7 @@ Validation rules (applied per-key as each answer is received):
 
 If any validation fails: show the specific error and re-prompt that field only. Do not re-ask fields that passed.
 
-Write `.claude/dev-agent.json` (merge with any existing valid keys — do not overwrite values that weren't re-prompted).
+Write `.claude/dev-agent.json` (merge with any existing valid keys — do not overwrite values that weren't re-prompted). Preserve any keys not in the Known Config Keys list without modification — read the full file, update only the keys that changed, write back the full object.
 
 Offer to commit:
 ```
