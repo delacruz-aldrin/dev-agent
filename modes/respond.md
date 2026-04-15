@@ -28,7 +28,7 @@ Addresses all open review comments on your PR — applies valid changes, replies
 ---
 
 ## Phase 0 — Setup + Ownership Check
-Read config. Run Backend Detection. Run Frontend Detection.
+Read config. Read context per **Shared: Session Context** — if stack is cached and the lockfile mtime is unchanged, skip Backend/Frontend Detection and use cached values; otherwise run Backend Detection and Frontend Detection.
 
 Hard block — your PRs only:
 - Fetch PR: `gh api repos/{REPO}/pulls/{pr_number}`
