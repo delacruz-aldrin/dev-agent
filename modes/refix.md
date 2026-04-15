@@ -162,6 +162,7 @@ Do not re-diagnose the original bug — the core fix is correct. Instead, isolat
 
 1. Apply fix to files (BE and FE as needed)
    - If `REJECTION_TYPE=side_effects`: preserve the original core fix diff; apply only side-effect patches on top
+   - If `REJECTION_TYPE=both` (treated as `wrong_root_cause` in Phase 2): apply the fresh re-diagnosis fix AND the side-effect patches from the Side Effect Map produced in Phase 2
 2. Update TS interfaces if API response shape changed
 3. If `API_CLIENT=orval` and shape changed: run `{API_GEN_CMD}`
 4. Update frontend consuming code (hooks/service/state/component) if affected
@@ -173,7 +174,7 @@ Do not re-diagnose the original bug — the core fix is correct. Instead, isolat
    - Passes → continue | Fails → fix + re-run | Still failing → revert all changes, note in report, stop
 7. If `FE_TEST≠none`: run `{FE_TEST_CMD}`:
    - Passes → continue | Fails → fix + re-run | Still failing → revert FE changes, note in report, continue with BE-only
-8. **Side-effect check** — skip if `REJECTION_TYPE=side_effects` (Phase 2 already produced a complete Side Effect Map that covers this). Run only if `REJECTION_TYPE=wrong_root_cause`:
+8. **Side-effect check** — skip if `REJECTION_TYPE=side_effects` OR `REJECTION_TYPE=both` (Phase 2 already produced a complete Side Effect Map that covers this). Run only if `REJECTION_TYPE=wrong_root_cause`:
    Trigger if any changed file is a shared interactor, model method, service, serializer/blueprint, or shared frontend hook/store/utility.
    If triggered: grep callers, read each, flag at-risk ones, add specs, fix if needed, re-run `{BE_TEST_CMD}`.
 9. Run **Shared: Run Quality Checks**
