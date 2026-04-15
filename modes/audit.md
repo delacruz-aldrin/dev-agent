@@ -117,7 +117,7 @@ Wait for response before creating any tickets.
 2. "Assign to you or leave unassigned? Reply 'me' or 'unassigned'."
 3. If `{jira_project}` contains multiple keys (e.g. `MULTI,HQA`): "Which project should I create tickets in? ({jira_project})" — wait for a single key. If single key: "I'll create tickets in {jira_project}. Correct? Reply 'yes' or provide a different key." Store the chosen key as `TARGET_PROJECT`.
 
-**Deduplication check:** Before creating each ticket, search Jira via Atlassian MCP. Sanitize the finding summary before interpolating it into JQL: remove any double-quote characters (`"`) and truncate to 60 characters to avoid malformed queries:
+**Deduplication check:** Before creating each ticket, search Jira via Atlassian MCP. Sanitize the finding summary before interpolating it into JQL: remove double-quotes (`"`), square brackets (`[`, `]`), JQL reserved words (`AND`, `OR`, `NOT`, `IN`, `IS`, `WAS`, `ORDER`, `BY`), and any other special characters (`~`, `*`, `?`, `+`, `-`) — then truncate to 60 characters to avoid malformed queries:
 `project = {TARGET_PROJECT} AND summary ~ "{sanitized finding summary}" AND resolution = Unresolved`
 If a matching open ticket is found: skip creation, note the existing ticket key in the report under **Already Tracked** instead.
 
