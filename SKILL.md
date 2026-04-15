@@ -394,7 +394,7 @@ If any metadata step fails: note in report and continue — do not abort.
 
 Used in fix, build, sweep. If Slack MCP fails: note in report and continue.
 
-1. Look up `{slack_group}` group ID via Slack MCP (once per session — reuse across tickets in sweep). Store as `SLACK_GROUP_ID`. If the lookup fails: set `SLACK_GROUP_ID=none` and continue — do not abort. Do not cache a failure; retry the lookup for the next ticket.
+1. Look up `{slack_group}` group ID via Slack MCP. Store as `SLACK_GROUP_ID`. Cache the result for the session only on success — if it succeeds once in sweep, reuse the cached value for subsequent tickets without re-querying. If the lookup fails: set `SLACK_GROUP_ID=none` for this ticket and continue — do not abort. On the next ticket, try again (do not carry forward a failed result as if it were cached).
 2. Post parent to `#{slack_channel}`:
    ```
    ✅ [TICKET] Summary
