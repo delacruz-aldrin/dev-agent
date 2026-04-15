@@ -196,7 +196,7 @@ Check in order:
 Run once at Phase 0 of any mode that touches frontend: **audit, fix, build, sweep, refix, verify, respond, review, refactor**. Store results as session variables.
 
 ### Step 1 — Locate Frontend Root (`FRONTEND_ROOT`)
-Check in order: `front/`, `frontend/`, `app/frontend/`, `client/`, `src/` — use first directory containing a `package.json`. If none: `FRONTEND_ROOT=none`. If `BE_FRAMEWORK=none` and a root `package.json` exists, use project root as `FRONTEND_ROOT`.
+Check in order: `front/`, `frontend/`, `app/frontend/`, `client/`, `src/` — use first directory containing a `package.json`. If none: `FRONTEND_ROOT=none`. If `BE_FRAMEWORK=none` and a root `package.json` exists, use project root as `FRONTEND_ROOT`. If multiple directories in this list each contain a `package.json`, note in the Session State which one was selected (e.g. `FRONTEND_ROOT=frontend/ (also found: client/)`) and continue with the first match.
 
 ### Step 2 — Detect Stack from `{FRONTEND_ROOT}/package.json`
 
