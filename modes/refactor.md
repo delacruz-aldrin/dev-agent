@@ -49,7 +49,10 @@ If checkout fails (uncommitted changes), stop:
 
 Check inputs in this order:
 
-1. `--from-audit <n>` → read `.claude/dev-agent-audit-state.json`. Find finding #n from the Refactor Priority section of the last audit (match by position or hash). Load the file path(s) and description as `ENTRY_HINT`. If the file is missing or finding not present: stop with "No audit state found. Run `/dev-agent audit` first."
+1. `--from-audit <n>` → resolve finding in this order:
+   - **Primary:** read `.claude/dev-agent/context/_audit.json`. If present and `audited_at` is within 14 days: find the entry where `report_index == n`. Load its `file` and `summary` as `ENTRY_HINT`. If `escalated: true`: note in Session State as `[audit] finding #n was escalated (persisted {run_count} runs)`.
+   - **Fallback:** if `_audit.json` is absent, stale (>14 days), or finding not found: read `.claude/dev-agent-audit-state.json` and match by position or hash as before.
+   - If neither resolves: stop with "No audit state found. Run `/dev-agent audit` first."
 2. `<file>:<start>-<end>` → set `REFACTOR_TARGET=line_range`, `ENTRY_HINT=lines start–end of file`
 3. `<file>` (no line range) → set `REFACTOR_TARGET=file`, `ENTRY_HINT=whole file`
 4. `"<description>"` (quoted string, no file path) → set `REFACTOR_TARGET=description`, `ENTRY_HINT=description`
