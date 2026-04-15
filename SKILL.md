@@ -401,6 +401,13 @@ Used in fix, build, sweep. If Slack MCP fails: note in report and continue.
    ```
 3. Reply in thread: warm, humorous, 2–4 sentences. If `SLACK_GROUP_ID≠none`: mention `<!subteam^{SLACK_GROUP_ID}>`. If `SLACK_GROUP_ID=none`: omit the mention entirely (never write the literal placeholder `<!subteam^GROUP_ID>`). Each ticket in a sweep must use a different angle. Never: "just following up", "circling back", "As an AI".
 
+   **Angle palette** — rotate through these across tickets in a sweep run (pick a different one for each):
+   - **Mystery solved** — frame the fix as cracking a case: clues, suspects, culprit found
+   - **Countdown / urgency** — "The PR clock is ticking", "fresh off the press", "born 0 days ago"
+   - **Challenge issued** — light dare to the reviewer: "bet you can't find a flaw", "first to review wins bragging rights"
+   - **Celebration** — treat the PR as a milestone: confetti energy, "another one for the history books"
+   - **Behind-the-scenes** — share a quick non-spoilery detail about what made this tricky, then hand off
+
    **Positive example of an acceptable reply:**
    > "👀 Fresh eyes on this one would be great — HQA-37771 just landed with a shiny new PR. It's been 0 days since the branch was born, so the trail is still warm. <!subteam^ABC123> — your move!"
 
