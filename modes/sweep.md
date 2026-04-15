@@ -87,6 +87,8 @@ Initial checkpoint structure (written at the start of Phase 0, updated throughou
 ```
 Write `detection_cache` immediately after Backend/Frontend Detection completes in Phase 0. On resume, if `detection_cache` is present, restore all variables from it and skip re-running detection. Invalidate the cache (re-run detection and overwrite) if `package.json`, `Gemfile`, or `go.mod` has been modified since the checkpoint was written — compare file mtimes using `stat`.
 
+**Per-ticket context precedence:** when processing each ticket in Phase 2, check for a per-ticket context file (`.claude/dev-agent/context/{TICKET_KEY}.json`) per **Shared: Session Context**. If present and stack is still valid (lockfile mtime + 7-day checks pass), use it — it takes precedence over `detection_cache` for that ticket. If absent or stale, fall back to `detection_cache`. This means a prior `fix` or `build` run on the same ticket carries forward its cached stack into sweep processing.
+
 **Print Session State** before querying tickets:
 ```
 ## Session State
