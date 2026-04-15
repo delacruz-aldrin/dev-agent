@@ -113,7 +113,10 @@ Show all 🔴 and 🟡 findings numbered. Ask:
 Consider batching — creating too many tickets at once can overwhelm the backlog.
 Proceed with all {count}? (yes / reduce to top 5 by severity / pick different numbers)
 ```
-Wait for response before creating any tickets.
+Wait for response:
+- `yes` → proceed with the full selection; continue to question 2
+- `reduce to top 5 by severity` → take the 5 highest-severity findings (🔴 first, then 🟡 by order); update selection, confirm the reduced list to the user, then continue to question 2
+- `pick different numbers` → re-show the numbered finding list and re-ask question 1; repeat the cap check with the new selection
 2. "Assign to you or leave unassigned? Reply 'me' or 'unassigned'."
 3. If `{jira_project}` contains multiple keys (e.g. `MULTI,HQA`): "Which project should I create tickets in? ({jira_project})" — wait for a single key. If single key: "I'll create tickets in {jira_project}. Correct? Reply 'yes' or provide a different key." Store the chosen key as `TARGET_PROJECT`.
 
