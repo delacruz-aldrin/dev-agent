@@ -34,7 +34,7 @@ Restructures code for clarity, maintainability, or separation of concerns — wi
 
 ## Phase 0 — Setup
 
-Read config. Run Backend Detection. Run Frontend Detection.
+Read config. Read context per **Shared: Session Context** — if stack is cached and the lockfile mtime is unchanged, skip Backend/Frontend Detection and use cached values; otherwise run Backend Detection and Frontend Detection.
 
 Switch to main:
 ```bash
@@ -70,6 +70,7 @@ Check inputs in this order:
 ## Session State
 BE_FRAMEWORK={value} | FRONTEND_ROOT={value} | STORE={value} | API_CLIENT={value}
 REFACTOR_TARGET={value} | ENTRY_HINT={value} | BRANCH={value}
+[context] stack reused from cache   ← only if stack was loaded from context
 ```
 
 ---
