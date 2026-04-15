@@ -516,7 +516,7 @@ Each mode merges its key into the context file — never replaces the entire fil
 | `fix` | `stack` (if re-detected), `fix` (root_cause, files_changed, callers_checked, side_effects, pr_number, pr_url, head_sha, timestamp, branch) |
 | `build` | `stack` (if re-detected); `build` key — `pr_number`, `pr_url`, `branch`, `timestamp` (so that verify and refix can reference the PR after a build run) |
 | `verify` | `verify` (verdict, blocking_findings, pr_number, timestamp) |
-| `refix` | `stack` (if re-detected); increments `refix_count` (treat as 0 if field is missing — older context files may not have it); clears `fix`, `build`, and `verify` keys |
+| `refix` | `stack` (if re-detected); increments `refix_count` (treat as 0 if field is missing); clears `build` and `verify` keys; overwrites `fix` key with the new PR's data (pr_number, pr_url, branch, head_sha, timestamp) — so a subsequent verify or second refix can find the corrected PR the same way they find a first-fix PR |
 | `refactor` | Does not write to per-ticket context (not ticket-scoped). When invoked via `--from-audit <n>`: directly modifies audit state files — see `modes/refactor.md` Phase 3. |
 | `pr` | Writes `build` key to per-ticket context when `TICKET_LINK≠none` — so that a subsequent `verify` run can find the PR. |
 | `respond` | Intentionally none — respond addresses comments on an existing PR; no new context data is produced. |

@@ -193,7 +193,7 @@ Do not re-diagnose the original bug — the core fix is correct. Instead, isolat
 2. Transition Jira back to "For Review" via Atlassian MCP — if fails: note in report and continue
 3. Run **Shared: Post Slack Thread**
 4. **Auto-verify offer:** ask: "Run `/dev-agent verify` on the new PR to confirm the corrected diagnosis holds? (yes/no)". If yes, run verify inline with `--comment` so findings are posted directly to the PR.
-5. Write context per **Shared: Session Context** — write `stack` (if re-detected during Phase 0); increment `refix_count` (default to 0 first if the field is absent — older context files may not have it); clear `fix`, `build`, and `verify` keys (new fix attempt — prior fix data, any build-originated PR reference, and prior verify findings are all invalid for this attempt).
+5. Write context per **Shared: Session Context** — write `stack` (if re-detected during Phase 0); increment `refix_count` (default to 0 first if the field is absent — older context files may not have it); clear `build` and `verify` keys; overwrite `fix` key with the new PR's data (`pr_number`, `pr_url`, `branch`, `head_sha`, `timestamp`). Writing a fresh `fix` key means a subsequent `verify` run or a second `refix` can find the corrected PR — the same path that works after a first `fix` run works after each refix.
 
 ```
 ## Refix Report — [Endpoint]
