@@ -28,7 +28,7 @@ Generates a complete feature implementation — backend endpoint, frontend integ
 ---
 
 ## Phase 0 — Setup
-Read config. Run Backend Detection. Run Frontend Detection.
+Read config. Read context per **Shared: Session Context** — if stack is cached and the lockfile mtime is unchanged, skip Backend/Frontend Detection and use cached values; otherwise run Backend Detection and Frontend Detection.
 
 **Atlassian MCP pre-flight (Jira input only):** if input appears to be a Jira link or ticket key (matches `[A-Z]+-[0-9]+` or contains `{jira_domain}`), fetch project metadata for `{jira_project}` via Atlassian MCP (cloudId = `{jira_domain}`). If it fails, stop immediately:
 ```
@@ -66,6 +66,7 @@ Sample silently:
 ## Session State
 BE_FRAMEWORK={value} | FRONTEND_ROOT={value} | STORE={value} | API_CLIENT={value}
 TICKET_KEY={value} | BRANCH={value}
+[context] stack reused from cache   ← only if stack was loaded from context
 ```
 
 ## Phase 1 — XML
@@ -133,6 +134,7 @@ TICKET_KEY={value} | BRANCH={value}
 11. Run **Shared: Create PR** with `TICKET_KEY` (or `none` if manual). Pass the Jira ticket URL as the ticket link.
 12. Transition Jira to "For Review" via Atlassian MCP — if fails: note in report and continue
 13. If standalone: run **Shared: Post Slack Thread**
+14. Write context per **Shared: Session Context** — record `stack` (if re-detected) only. Build does not write a `fix` key.
 
 ```
 ## New Feature — [Name]

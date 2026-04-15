@@ -427,6 +427,7 @@ Each mode merges its key into the context file — never replaces the entire fil
 | Mode | Writes |
 |---|---|
 | `fix` | `stack` (if re-detected), `fix` (root_cause, files_changed, callers_checked, side_effects, pr_number, pr_url, head_sha, timestamp, branch) |
+| `build` | `stack` (if re-detected) only — does not write a `fix` key |
 | `verify` | `verify` (verdict, blocking_findings, pr_number, timestamp) |
 | `refix` | increments `refix_count`; clears `fix` and `verify` keys |
 
