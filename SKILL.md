@@ -402,7 +402,7 @@ Persists findings across mode runs for the same ticket so modes can skip redunda
     "timestamp": "<ISO8601>",
     "pr_number": 519,
     "verdict": "NEEDS_DISCUSSION",
-    "blocking_findings": ["<finding text>"]
+    "blocking_findings": ["<plain text — no emoji prefix, one finding per element>"]
   },
   "refix_count": 0
 }

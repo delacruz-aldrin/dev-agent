@@ -122,4 +122,4 @@ gh api repos/{REPO}/pulls/{pr_number}/reviews -X POST \
 ```
 Note the posted review URL in the report.
 
-Write context per **Shared: Session Context** — record `verify` key: verdict, blocking_findings (array of 🔴 finding texts), pr_number, timestamp.
+Write context per **Shared: Session Context** — record `verify` key: verdict, blocking_findings (array of plain-text finding strings — strip severity emoji before writing), pr_number, timestamp.
