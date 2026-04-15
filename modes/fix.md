@@ -122,7 +122,8 @@ Symptom → focus mapping:
    If a caller needs a fix: apply it, add a spec, re-run `{BE_TEST_CMD}`.
 
 9. Run **Shared: Run Quality Checks**
-10. **Pre-commit review gate:** show a summary of all changed files and a brief description of each change, then ask: "Ready to commit? (yes / review / revert all)".
+10. **Pre-commit review gate** (skip entirely if running inside sweep — sweep is autonomous):
+    Show a summary of all changed files and a brief description of each change, then ask: "Ready to commit? (yes / review / revert all)".
     - `yes` → proceed
     - `review` → show full diff of each changed file, then re-ask
     - `revert all` → revert all changes, note in report, stop

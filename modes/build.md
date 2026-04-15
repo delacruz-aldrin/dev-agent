@@ -125,7 +125,8 @@ TICKET_KEY={value} | BRANCH={value}
 8. If `FE_TEST≠none`: run `{FE_TEST_CMD}`:
    - Passes → continue | Fails → fix + re-run | Still failing → revert FE changes, note in report
 9. Run **Shared: Run Quality Checks**
-10. **Pre-commit review gate:** show a summary of all generated and modified files with a brief description of each, then ask: "Ready to commit? (yes / review / revert all)".
+10. **Pre-commit review gate** (skip entirely if running inside sweep — sweep is autonomous):
+    Show a summary of all generated and modified files with a brief description of each, then ask: "Ready to commit? (yes / review / revert all)".
     - `yes` → proceed
     - `review` → show full diff of each changed file, then re-ask
     - `revert all` → revert all changes, note in report, stop

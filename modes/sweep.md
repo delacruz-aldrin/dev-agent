@@ -130,11 +130,17 @@ Wait for final confirmation before starting Phase 2.
 ## Phase 2 — Sequential Processing
 Route: Bug → fix mode, everything else → build mode. For each ticket:
 
+**Gates suppressed in sweep mode** — sweep is autonomous; do not pause at interactive gates. The following gates defined in fix and build are skipped when running inside sweep:
+- Pre-commit review gate ("Ready to commit?")
+- Auto-verify offer (refix only)
+
+If the user wants to review changes before committing, they should run fix or build individually rather than sweep.
+
 1. Pull latest main before branching:
    ```bash
    git checkout {base_branch} && git pull origin {base_branch}
    ```
-2. Run fix or build mode fully (including FE steps per detected stack) — if tests fail after auto-fix: revert, note in sweep report, skip
+2. Run fix or build mode fully (including FE steps per detected stack), suppressing the gates listed above — if tests fail after auto-fix: revert, note in sweep report, skip
 3. PR creation is part of fix/build — verify labels, milestone, reviewer via `gh api` — if fails: note in report and continue
 4. Transition to "For Review" via Atlassian MCP — if fails: note in report and continue
 5. Run **Shared: Post Slack Thread** — look up `{slack_group}` once, reuse for all tickets. Each ticket must use a different angle.
