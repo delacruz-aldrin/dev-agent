@@ -72,14 +72,7 @@ PR_NUMBER={value} | JIRA_REQUIREMENTS={found/none}
 
 ## Phase 2 — Execute
 For each thread:
-- Detect if the comment body contains a GitHub suggestion block (` ```suggestion ` fence). If yes: apply it directly via the Suggestions API rather than re-implementing manually:
-  ```bash
-  gh api repos/{REPO}/pulls/{pr_number}/reviews -X POST \
-    --input - <<'EOF'
-  {"event":"COMMENT","comments":[{"path":"<file>","position":<pos>,"body":"Applying suggestion."}]}
-  EOF
-  ```
-  Mark thread as resolved after applying.
+- Detect if the comment body contains a GitHub suggestion block (` ```suggestion ` fence). If yes: apply the suggested change by editing the file directly — extract the suggested lines from the suggestion block and write them to the file at the indicated path and line range. Do not use the GitHub reviews POST endpoint for this — that creates a comment, it does not apply the code change. After editing the file, the change will be included in the commit at step 4.
 - For all other comments: assess validity → apply change or reply via `gh api repos/{REPO}/pulls/{pr_number}/comments/{id}/replies`.
 
 After all threads:
