@@ -133,7 +133,7 @@ Symptom → focus mapping:
    git push origin HEAD
    ```
 12. Run **Shared: Create PR** with `TICKET_KEY` (or `none` if manual). Pass the Jira ticket URL as the ticket link.
-13. Transition Jira to "For Review" via Atlassian MCP — if fails: note in report and continue
+13. Transition Jira to "For Review" via Atlassian MCP — skip if `TICKET_KEY=none`; if fails: note in report and continue
 14. If standalone (not via sweep): run **Shared: Post Slack Thread**
 15. Write context per **Shared: Session Context** — record `stack` (if re-detected) and `fix` key: root_cause, files_changed, callers_checked, side_effects, pr_number, pr_url, head_sha (current HEAD), timestamp, branch.
 

@@ -136,7 +136,7 @@ TICKET_KEY={value} | BRANCH={value}
     git push origin HEAD
     ```
 12. Run **Shared: Create PR** with `TICKET_KEY` (or `none` if manual). Pass the Jira ticket URL as the ticket link.
-13. Transition Jira to "For Review" via Atlassian MCP — if fails: note in report and continue
+13. Transition Jira to "For Review" via Atlassian MCP — skip if `TICKET_KEY=none`; if fails: note in report and continue
 14. If standalone: run **Shared: Post Slack Thread**
 15. Write context per **Shared: Session Context** — record `stack` (if re-detected) only. Build does not write a `fix` key.
 
