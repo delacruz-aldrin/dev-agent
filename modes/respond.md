@@ -37,7 +37,10 @@ Hard block — your PRs only:
 
 Fetch unresolved threads only. If none: stop.
 
-Fetch linked Jira ticket for context: scan the PR body for a Jira URL matching `{jira_domain}`. If found, fetch ticket via Atlassian MCP (cloudId = `{jira_domain}`) — description and acceptance criteria. Store as `JIRA_REQUIREMENTS`. If not found: `JIRA_REQUIREMENTS=none`.
+Fetch linked Jira ticket for context: scan the PR body for a Jira URL matching `{jira_domain}`. If found:
+- **Atlassian MCP pre-flight:** fetch project metadata for `{jira_project}` via Atlassian MCP (cloudId = `{jira_domain}`). If it fails: set `JIRA_REQUIREMENTS=none` and log a warning — do not stop the mode entirely (unlike Jira-required modes, Jira context is supplementary here).
+- If pre-flight passes: fetch the ticket — description and acceptance criteria. Store as `JIRA_REQUIREMENTS`.
+- If not found in PR body: `JIRA_REQUIREMENTS=none`.
 
 Read `_audit.json` per **Shared: Session Context** — apply recency gate (14 days) and overlap filter against the PR's changed files. Store matching findings as `RESPOND_AUDIT_FINDINGS`. These are pre-existing risks, not introduced by the PR — they inform responses but do not affect how comments are addressed.
 
@@ -102,7 +105,7 @@ After all threads:
    - Any `conclusion = failure` → **CI fails** → note in report, post to Slack noting CI failure, do not re-request review
    - Still pending after 10 attempts → treat as CI inconclusive: note in report, do not re-request review
 6. Transition Jira to "For Review" via Atlassian MCP — if fails: note in report and continue
-7. Slack to `#{slack_channel}` — no mentions. Find thread via targeted text search in order: full URL → `{repo}/pull/{number}` → `pull/{number}` → PR title verbatim. Do NOT browse recent messages. Reply if found, new message if not:
+7. Slack to `#{slack_channel}` — no mentions. Find thread via targeted text search in order: full URL (raw) → full URL wrapped as `<https://...>` → `{repo}/pull/{number}` → `pull/{number}` → PR title verbatim. Do NOT browse recent messages. Reply if found, new message if not:
    ```
    ✅ PR comments addressed — [PR title]
    PR: https://github.com/{REPO}/pull/{pr_number}

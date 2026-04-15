@@ -72,9 +72,7 @@ Detect Jira ticket:
 - If no argument: try to infer from the current branch name. Pattern `^(bug|feat|fix)/([A-Z]+-[0-9]+)` — extract the ticket key and set as `TICKET_LINK` (key only, not a URL). If the branch doesn't match, set `TICKET_LINK=none`.
 
 ## Phase 1 — Create PR
-Run **Shared: Create PR** with `TICKET_LINK`.
-
-If `DRAFT_PR=true`: pass `"draft": true` in the `gh api` POST body when creating the PR.
+Run **Shared: Create PR** with `TICKET_LINK`. `DRAFT_PR` is already set from Phase 0 — **Shared: Create PR** reads this flag and passes `"draft": true` automatically when `DRAFT_PR=true`.
 
 Run **Shared: Post Slack Thread** — if Slack MCP fails: note in report and continue. Skip if `DRAFT_PR=true` (draft PRs are not ready for review).
 

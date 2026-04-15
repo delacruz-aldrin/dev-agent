@@ -82,6 +82,8 @@ Initial checkpoint structure (written at the start of Phase 0, updated throughou
     "BE_TEST_CMD": "bundle exec rspec",
     "BE_LINT_FIX": "bundle exec rubocop -a",
     "BE_LINT_CHECK": "bundle exec rubocop",
+    "BE_FORMAT_CMD": "bundle exec stree write",
+    "API_GEN_CMD": "yarn generate-client",
     "FE_TEST": "vitest",
     "FE_TEST_CMD": "yarn test",
     "FE_LINT": "biome",
@@ -90,7 +92,7 @@ Initial checkpoint structure (written at the start of Phase 0, updated throughou
   }
 }
 ```
-Write `detection_cache` immediately after Backend/Frontend Detection completes in Phase 0. On resume, if `detection_cache` is present, restore all variables from it and skip re-running detection. Invalidate the cache (re-run detection and overwrite) if `package.json`, `Gemfile`, or `go.mod` has been modified since the checkpoint was written — compare file mtimes using `stat`.
+Write `detection_cache` immediately after Backend/Frontend Detection completes in Phase 0 — include all resolved variables: `BE_FRAMEWORK`, `FRONTEND_ROOT`, `STORE`, `API_CLIENT`, `BE_TEST_CMD`, `BE_LINT_FIX`, `BE_LINT_CHECK`, `BE_FORMAT_CMD` (store `null` if not applicable to the framework), `API_GEN_CMD` (store `null` if `API_CLIENT≠orval` or no generate command found), `FE_TEST`, `FE_TEST_CMD`, `FE_LINT`, `FE_LINT_FIX`, `FE_LINT_CHECK`. On resume, if `detection_cache` is present, restore all variables from it and skip re-running detection. Invalidate the cache (re-run detection and overwrite) if `package.json`, `Gemfile`, or `go.mod` has been modified since the checkpoint was written — compare file mtimes using `stat`.
 
 **Per-ticket context precedence:** when processing each ticket in Phase 2, check for a per-ticket context file (`.claude/dev-agent/context/{TICKET_KEY}.json`) per **Shared: Session Context**. If present and stack is still valid (lockfile mtime + 7-day checks pass), use it — it takes precedence over `detection_cache` for that ticket. If absent or stale, fall back to `detection_cache`. This means a prior `fix` or `build` run on the same ticket carries forward its cached stack into sweep processing.
 

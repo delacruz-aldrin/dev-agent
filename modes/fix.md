@@ -28,7 +28,9 @@ Diagnoses a bug and opens a PR with the fix, specs, and Slack notification.
 ---
 
 ## Phase 0 — Setup
-Read config. Read context per **Shared: Session Context** — if stack is cached and the lockfile mtime is unchanged, skip Backend/Frontend Detection and use cached values; otherwise run Backend Detection and Frontend Detection. Also read `_audit.json` per **Shared: Session Context** — apply recency and overlap filters after the trace path is known; store matches as `AUDIT_FINDINGS`.
+Read config. Read context per **Shared: Session Context** — if stack is cached and the lockfile mtime is unchanged, skip Backend/Frontend Detection and use cached values; otherwise run Backend Detection and Frontend Detection.
+
+**Audit findings pre-load:** read `_audit.json` per **Shared: Session Context** — apply the **recency gate only** (skip entirely if `audited_at` is older than 14 days, log `[context] audit findings skipped (>14 days old)`). Store recency-passing findings as `AUDIT_FINDINGS_CANDIDATE`. Do **not** apply the overlap filter yet — the trace path is not known until Phase 1.
 
 **Atlassian MCP pre-flight (Jira input only):** if input appears to be a Jira link or ticket key (matches `[A-Z]+-[0-9]+` or contains `{jira_domain}`), fetch project metadata for `{jira_project}` via Atlassian MCP (cloudId = `{jira_domain}`). If it fails, stop immediately:
 ```
@@ -62,9 +64,11 @@ Create branch per **Shared: Create Branch**.
 ## Session State
 BE_FRAMEWORK={value} | FRONTEND_ROOT={value} | STORE={value} | API_CLIENT={value}
 TICKET_KEY={value} | BRANCH={value}
-[context] loaded HQA-123 (fix ran Nm ago)          ← only if context file was found
-[context] N audit finding(s) matched traced files  ← only if AUDIT_FINDINGS non-empty
+[context] loaded HQA-123 (fix ran Nm ago)              ← only if context file was found
+[context] N candidate audit finding(s) (pre-filter)    ← only if AUDIT_FINDINGS_CANDIDATE non-empty
 ```
+
+**After Phase 1 trace** (once the trace-path file set is known): apply the overlap filter to `AUDIT_FINDINGS_CANDIDATE` — keep only findings whose `file` path matches any file in the current trace path. Store matches as `AUDIT_FINDINGS`. If non-empty: log `[context] N audit finding(s) matched traced files`.
 
 ## Phase 1 — XML
 Trace flow using `BE_ARCH_TRACE`. Also trace frontend based on `STORE`:

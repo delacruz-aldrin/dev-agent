@@ -80,7 +80,7 @@ The canonical key list (used for missing-key detection and validation):
 | `version` | integer — managed automatically, never prompt the user for this | `1` |
 | `repo` | `owner/repo` — must contain exactly one `/` | `C-FO/baberu` |
 | `jira_domain` | hostname only, no protocol | `your-org.atlassian.net` |
-| `jira_project` | one or more uppercase alphanumeric keys, comma-separated (spaces around commas are accepted and stripped on save) | `MULTI` or `MULTI, HQA` |
+| `jira_project` | one or more uppercase alphanumeric keys, comma-separated, no spaces (spaces around commas are accepted on input and stripped on save) | `MULTI` or `MULTI,HQA` |
 | `slack_channel` | no `#` prefix | `team-dev-agent` |
 | `slack_group` | handle, no `@` | `likha-dev-agent-eng` |
 | `pr_reviewer_team` | GitHub team slug | `dev-agent` |
@@ -121,12 +121,14 @@ At Phase 0 of every mode: read `.claude/dev-agent.json` if it exists.
    - All keys present → proceed
 
 ### Config Setup
-Show which keys need values (all for first run, or only the missing ones for partial configs). For each missing key, show the expected format and an example, then prompt one at a time:
+First, show a preamble listing **all** keys that need values (so the user knows the full scope before answering anything). Then ask for each key **one at a time** in the order they appear in the Known Config Keys table:
 ```
 👋 dev-agent needs a few values for this project:
+  Missing: repo, jira_domain, jira_project, base_branch
 
 [key name] ([format hint], e.g. [example]):
 ```
+After the user answers the first key and it passes validation, move to the next key. Do not re-show the full missing-keys list between prompts — just prompt the next key directly.
 After all values are collected, validate each:
 - `repo`: must match `[^/]+/[^/]+` (exactly one `/`)
 - `jira_domain`: must not contain `://` or spaces
@@ -156,7 +158,7 @@ Every mode reads all values from `.claude/dev-agent.json`. Never hardcode or inf
 
 ## Shared: Backend Detection
 
-Run once at Phase 0 of any mode that touches the backend (audit, fix, build, sweep). Store results as session variables.
+Run once at Phase 0 of any mode that touches the backend: **audit, fix, build, sweep, refix, verify, respond, review, refactor**. Store results as session variables.
 
 ### Step 1 — Detect Framework (`BE_FRAMEWORK`)
 Check in order:
@@ -190,7 +192,7 @@ Check in order:
 
 ## Shared: Frontend Detection
 
-Run once at Phase 0 of any mode that touches frontend (audit, fix, build, sweep). Store results as session variables.
+Run once at Phase 0 of any mode that touches frontend: **audit, fix, build, sweep, refix, verify, respond, review, refactor**. Store results as session variables.
 
 ### Step 1 — Locate Frontend Root (`FRONTEND_ROOT`)
 Check in order: `front/`, `frontend/`, `app/frontend/`, `client/`, `src/` — use first directory containing a `package.json`. If none: `FRONTEND_ROOT=none`. If `BE_FRAMEWORK=none` and a root `package.json` exists, use project root as `FRONTEND_ROOT`.
@@ -260,7 +262,9 @@ Check for branch collision first:
 ```bash
 git branch --list "{branch-name}"
 ```
-If the branch already exists, append `-2`, then `-3`, etc. until a free name is found.
+If the branch already exists, append `-2`, then `-3`, etc. until a free name is found. **Stop at `-20`**: if no free name is found after 19 suffixes, stop and report: `⛔ Could not create branch — too many existing variants of {branch-name}. Clean up old branches and retry.`
+
+Note: `git branch --list` checks **local branches only**. If a teammate pushed the same branch name to remote without fetching locally, the collision will not be detected here — the subsequent `git push` will fail with a conflict error. If push fails with a branch conflict: rename the local branch (`git branch -m {branch-name} {branch-name}-2`) and retry.
 
 ```bash
 git checkout -b {branch-name}
@@ -310,6 +314,7 @@ Infer values from commits and diff:
 - **Out of Scope** — what was intentionally not changed.
 - **Test Cases** — checklist (`- [ ]`) of steps a reviewer can follow to verify.
 - **AI Prompt** — include if the section exists in the template.
+- **Unknown/custom sections** — if the template contains sections not listed above (e.g. `## Screenshots`, `## Rollback Plan`, `## Deployment Notes`, `## Stakeholders`): fill each with a best-effort value inferred from the diff and commits. If no relevant information can be inferred, write `N/A` for that section. Never leave a section header with no body — always provide at least a placeholder value so the PR body renders cleanly.
 
 ### Step 3 — Create PR
 Push branch if not already pushed:
@@ -317,17 +322,29 @@ Push branch if not already pushed:
 git push -u origin HEAD
 ```
 
-Create via REST API:
+Create via REST API. If the invoking mode set `DRAFT_PR=true`, include `"draft": true` in the request body; otherwise omit it:
 ```bash
+# Standard (non-draft):
 gh api repos/{REPO}/pulls -X POST \
   -f title="<title>" \
   -f head="<branch>" \
   -f base="{base_branch}" \
   -f body="<filled template>" \
   --jq '.number, .html_url'
+
+# Draft (when DRAFT_PR=true):
+gh api repos/{REPO}/pulls -X POST \
+  -f title="<title>" \
+  -f head="<branch>" \
+  -f base="{base_branch}" \
+  -f body="<filled template>" \
+  -F draft=true \
+  --jq '.number, .html_url'
 ```
 
 Store PR number as `PR_NUMBER`, URL as `PR_URL`.
+
+Modes that support `DRAFT_PR`: `pr` (via `--draft` flag). All other modes create non-draft PRs (`DRAFT_PR=false` by default).
 
 ### Step 4 — Apply Metadata
 **Labels** — always apply `ai-contribution-level:3` plus one productivity label:
@@ -363,7 +380,7 @@ if [ -z "$MILESTONE_ID" ]; then
   # Check the pr_milestone config value with /dev-agent config validate.
 else
   gh api repos/{REPO}/issues/{PR_NUMBER} -X PATCH \
-    -f milestone="$MILESTONE_ID"
+    -F milestone=$MILESTONE_ID
 fi
 ```
 
@@ -375,13 +392,18 @@ If any metadata step fails: note in report and continue — do not abort.
 
 Used in fix, build, sweep. If Slack MCP fails: note in report and continue.
 
-1. Look up `{slack_group}` group ID via Slack MCP (once per session — reuse across tickets in sweep)
+1. Look up `{slack_group}` group ID via Slack MCP (once per session — reuse across tickets in sweep). Store as `SLACK_GROUP_ID`. If the lookup fails: set `SLACK_GROUP_ID=none` and continue — do not abort. Do not cache a failure; retry the lookup for the next ticket.
 2. Post parent to `#{slack_channel}`:
    ```
    ✅ [TICKET] Summary
    PR: https://github.com/{REPO}/pull/{pr_number}
    ```
-3. Reply in thread: warm, humorous, 2–4 sentences. Mention `<!subteam^GROUP_ID>`. Each ticket in a sweep must use a different angle. Never: "just following up", "circling back", "As an AI".
+3. Reply in thread: warm, humorous, 2–4 sentences. If `SLACK_GROUP_ID≠none`: mention `<!subteam^{SLACK_GROUP_ID}>`. If `SLACK_GROUP_ID=none`: omit the mention entirely (never write the literal placeholder `<!subteam^GROUP_ID>`). Each ticket in a sweep must use a different angle. Never: "just following up", "circling back", "As an AI".
+
+   **Positive example of an acceptable reply:**
+   > "👀 Fresh eyes on this one would be great — HQA-37771 just landed with a shiny new PR. It's been 0 days since the branch was born, so the trail is still warm. <!subteam^ABC123> — your move!"
+
+   The above hits: specific reference to the ticket, light humor, brief, clear call to action, and a group mention. Match this energy — vary the framing each time.
 
 ---
 
@@ -480,9 +502,9 @@ Each mode merges its key into the context file — never replaces the entire fil
 |---|---|
 | `audit` | `_audit.json` (global) — audited_at, all current findings (NEW + PERSISTED) with hash, severity, file, summary |
 | `fix` | `stack` (if re-detected), `fix` (root_cause, files_changed, callers_checked, side_effects, pr_number, pr_url, head_sha, timestamp, branch) |
-| `build` | `stack` (if re-detected) only — does not write a `fix` key |
+| `build` | `stack` (if re-detected); `build` key — `pr_number`, `pr_url`, `branch`, `timestamp` (so that verify and refix can reference the PR after a build run) |
 | `verify` | `verify` (verdict, blocking_findings, pr_number, timestamp) |
-| `refix` | `stack` (if re-detected); increments `refix_count` (treat as 0 if field is missing — older context files may not have it); clears `fix` and `verify` keys |
+| `refix` | `stack` (if re-detected); increments `refix_count` (treat as 0 if field is missing — older context files may not have it); clears `fix`, `build`, and `verify` keys |
 
 Write at the **end** of the mode, after all work is done. If the write fails: note in report and continue — never block on context writes.
 
@@ -501,6 +523,8 @@ Mode files contain `<analysis>` blocks in their Phase 1 sections. These are **in
   <constraints>...</constraints>
 </analysis>
 ```
+
+**What correct output looks like:** after reasoning through the `<analysis>` block internally, the very next thing you write should be the section header from the Report or Execute block — for example `## Bug Report — [Endpoint]` or the first code change. Do not output any preamble, summary of your reasoning, or restatement of the analysis. Go directly from invisible reasoning to visible output.
 
 ---
 

@@ -49,10 +49,10 @@ If checkout fails (uncommitted changes), stop:
 
 Check inputs in this order:
 
-1. `--from-audit <n>` → resolve finding in this order:
-   - **Primary:** read `.claude/dev-agent/context/_audit.json`. If present and `audited_at` is within 14 days: find the entry where `report_index == n`. Load its `file` and `summary` as `ENTRY_HINT`. If `escalated: true`: note in Session State as `[audit] finding #n was escalated (persisted {run_count} runs)`.
-   - **Fallback:** if `_audit.json` is absent, stale (>14 days), or finding not found: read `.claude/dev-agent-audit-state.json` and match by position or hash as before.
-   - If neither resolves: stop with "No audit state found. Run `/dev-agent audit` first."
+1. `--from-audit <n>` → resolve finding:
+   - Read `.claude/dev-agent/context/_audit.json`. If present and `audited_at` is within 14 days: find the entry where `report_index == n`. Load its `file` and `summary` as `ENTRY_HINT`. Store the entry's `hash` as `RESOLVED_AUDIT_HASH` for use in Phase 4. If `escalated: true`: note in Session State as `[audit] finding #n was escalated (persisted {run_count} runs)`.
+   - If `_audit.json` is absent or stale (>14 days): stop with: "Audit context is missing or expired. Run `/dev-agent audit` first to generate fresh findings." Do **not** fall back to `.claude/dev-agent-audit-state.json` — that file stores only hashes and run counts, not the file paths or summaries needed to resolve finding #n.
+   - If `_audit.json` is fresh but has no entry with `report_index == n`: stop with: "Finding #n not found in the last audit (report had fewer than n findings). Run `/dev-agent audit` to refresh."
 2. `<file>:<start>-<end>` → set `REFACTOR_TARGET=line_range`, `ENTRY_HINT=lines start–end of file`
 3. `<file>` (no line range) → set `REFACTOR_TARGET=file`, `ENTRY_HINT=whole file`
 4. `"<description>"` (quoted string, no file path) → set `REFACTOR_TARGET=description`, `ENTRY_HINT=description`
@@ -193,6 +193,9 @@ Create a follow-up Jira ticket? (yes / skip)
     git push origin HEAD
     ```
 12. Run **Shared: Create PR**. Use label `4.Quality improvement`. If invoked via `--from-audit <n>`: include the finding description and audit date in the PR body under a **Resolves Audit Finding** section.
+13. **Audit state cleanup (only if invoked via `--from-audit <n>`):** after the PR is created, remove the resolved finding from both audit state files so the next audit run classifies it as `RESOLVED` rather than `PERSISTED`:
+    - Read `.claude/dev-agent/context/_audit.json` — remove the entry with hash `{RESOLVED_AUDIT_HASH}`. Write back. If write fails: note in report and continue.
+    - Read `.claude/dev-agent-audit-state.json` — remove `{RESOLVED_AUDIT_HASH}` from both `previous_hashes` and `run_counts`. Write back. If write fails: note in report and continue.
 
 ---
 

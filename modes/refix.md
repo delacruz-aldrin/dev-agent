@@ -45,12 +45,7 @@ Detect input — both are required. If either is missing, ask before continuing:
 - **Jira ticket** (link or key) → fetch via Atlassian MCP (cloudId = `{jira_domain}`) — description, steps to reproduce, expected, actual, any updated acceptance criteria. Derive `TICKET_KEY` from URL or key.
 - **Rejected PR** (GitHub PR link or number) → fetch via `gh pr view {number} --repo {REPO} --json title,body,comments,reviews,files` — diff, reviewer comments, and any CI failure details.
 
-Create branch per **Shared: Create Branch**. Use the same `TICKET_KEY` with a `-2` suffix: e.g. `bug/HQA-12345-2`.
-Check for branch collision before creating:
-```bash
-git branch --list "bug/{TICKET_KEY}-2" "feat/{TICKET_KEY}-2"
-```
-If the branch already exists, increment the suffix: try `-3`, `-4`, etc. until a free name is found. Use that name.
+Create branch per **Shared: Create Branch**. The base name for collision detection is `bug/{TICKET_KEY}` or `feat/{TICKET_KEY}` (same as the original fix branch). Because the original fix branch already occupies the base name, **Shared: Create Branch** will find the collision and automatically start at suffix `-2` (e.g. `bug/HQA-12345-2`). If `-2` is also taken it will try `-3`, up to the cap defined in **Shared: Create Branch**.
 
 **Print Session State** before proceeding to Phase 1:
 ```

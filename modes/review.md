@@ -122,7 +122,7 @@ Submit review via `gh api repos/{REPO}/pulls/{pr_number}/reviews`:
 - `REQUEST_CHANGES` — any blockers present
 - `COMMENT` — suggestions only, or CI not fully passed / inconclusive (state CI status explicitly)
 
-Slack to `#{slack_channel}`: find thread via targeted text search in order — full URL → `{repo}/pull/{number}` → `pull/{number}` → PR title verbatim. Do NOT browse recent messages. Look up PR author Slack ID via Slack MCP. Reply with mention if found, new message if not. If Slack MCP fails: note in report and continue:
+Slack to `#{slack_channel}`: find thread via targeted text search in order — full URL (raw) → full URL wrapped as `<https://...>` → `{repo}/pull/{number}` → `pull/{number}` → PR title verbatim. Do NOT browse recent messages. Look up PR author Slack ID via Slack MCP. Reply with mention if found, new message if not. If Slack MCP fails: note in report and continue:
 ```
 <@MEMBER_ID> [verdict] — [PR title]
 [X] blocking, [Y] suggestions

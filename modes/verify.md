@@ -130,4 +130,6 @@ gh api repos/{REPO}/pulls/{pr_number}/reviews -X POST \
 ```
 Note the posted review URL in the report.
 
-Write context per **Shared: Session Context** — record `verify` key: verdict, blocking_findings (array of plain-text finding strings — strip severity emoji before writing), pr_number, timestamp.
+Write context per **Shared: Session Context** — record `verify` key: verdict, blocking_findings (array of plain-text finding strings), pr_number, timestamp.
+
+**blocking_findings write rule:** populate this array from the 🔴 Blocking rows of the findings table. For each: take the `Finding` cell text only — strip all leading emoji characters (🔴, 🟡, 🟢, ↑, ⚠️, and any other Unicode emoji) before writing. The stored strings must be plain ASCII/text with no emoji prefix. Example: `"🔴 nil check missing for suspended users"` → stored as `"nil check missing for suspended users"`. This is enforced at write time, not at report-generation time — generate the report with emoji freely, then strip when constructing the array for the context write.

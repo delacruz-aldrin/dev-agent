@@ -139,7 +139,7 @@ TICKET_KEY={value} | BRANCH={value}
 12. Run **Shared: Create PR** with `TICKET_KEY` (or `none` if manual). Pass the Jira ticket URL as the ticket link.
 13. Transition Jira to "For Review" via Atlassian MCP — skip if `TICKET_KEY=none`; if fails: note in report and continue
 14. If standalone: run **Shared: Post Slack Thread**
-15. Write context per **Shared: Session Context** — record `stack` (if re-detected) only. Build does not write a `fix` key.
+15. Write context per **Shared: Session Context** — record `stack` (if re-detected); write `build` key: `pr_number`, `pr_url`, `branch`, `timestamp`. This allows `verify` and `refix` to reference the PR after a build run.
 
 ```
 ## New Feature — [Name]
