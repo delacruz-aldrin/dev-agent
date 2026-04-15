@@ -118,7 +118,7 @@ TICKET_KEY={value} | BRANCH={value}
    ✅ "Users can fetch a single node" → GET /api/p/nodes/:id in nodes_controller.rb
    ❌ "Returns translations for the node" → NOT FOUND — no serializer field or FE interface includes translations
    ```
-   For each uncovered AC item: "AC item [N] has no implementation. Generate it now or skip? (generate / skip)". If `generate`: implement it before continuing. Do not proceed to commit with any unresolved `generate` responses outstanding.
+   For each uncovered AC item: "AC item [N] has no implementation. Generate it now or skip? (generate / skip)". If `generate`: implement it before continuing. Do not proceed to commit with any unresolved `generate` responses outstanding. If `skip`: record the AC item in the report under **Skipped AC Items** — do not silently drop it.
 6. Write FE files (interfaces, component; service only if `API_CLIENT=manual`)
 7. Run `{BE_TEST_CMD}`:
    - Passes → continue | Fails → fix + re-run | Still failing → revert all changes, note in report, stop
@@ -145,5 +145,6 @@ TICKET_KEY={value} | BRANCH={value}
 ## New Feature — [Name]
 ### BE Files Written | ### Route | ### Controller | ### Serializer | ### OpenAPI Fragment | ### Specs
 ### FE Files Written | ### TS Interfaces | ### Client | ### State | ### Component
+### AC Coverage (omit section if manual input or all ACs covered) | ### Skipped AC Items (omit if none)
 ### Ambiguity Flags | ### Test Suite | ### Jira Status | ### PR
 ```
