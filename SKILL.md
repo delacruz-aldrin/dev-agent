@@ -22,6 +22,7 @@ On invocation, read the corresponding file from `~/.claude/skills/dev-agent/mode
 | `/dev-agent follow-up` | `modes/follow-up.md` |
 | `/dev-agent setup <url> [url2 ...]` | `modes/setup.md` |
 | `/dev-agent setup --rollback [id]` | `modes/setup.md` |
+| `/dev-agent setup --diff <id1> <id2>` | `modes/setup.md` |
 | `/dev-agent pr [ticket key or URL]` | `modes/pr.md` |
 | `/dev-agent refactor` | `modes/refactor.md` |
 | `/dev-agent refactor <file>` | `modes/refactor.md` |
