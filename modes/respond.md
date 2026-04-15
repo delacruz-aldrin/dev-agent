@@ -92,7 +92,7 @@ After all threads:
    git commit -m "chore: address PR review comments"
    git push origin HEAD
    ```
-5. Wait for CI — first fetch required status checks from branch protection to avoid polling unrelated checks (deploy previews, bots, coverage reporters):
+6. Wait for CI — first fetch required status checks from branch protection to avoid polling unrelated checks (deploy previews, bots, coverage reporters):
    ```bash
    REQUIRED=$(gh api repos/{REPO}/branches/{base_branch}/protection --jq '.required_status_checks.contexts[]' 2>/dev/null)
    ```
