@@ -44,7 +44,7 @@ Read `_audit.json` per **Shared: Session Context** — apply recency gate (14 da
 
 **Prior verify check:** look for previous COMMENT reviews on this PR authored by the authenticated user:
 ```bash
-gh api repos/{REPO}/pulls/{pr_number}/reviews --jq '[.[] | select(.user.login == "<current_user>" and .body | startswith("## Verify Report"))]'
+gh api repos/{REPO}/pulls/{pr_number}/reviews --jq '[.[] | select(.user.login == "<current_user>" and (.body | startswith("## Verify Report")))]'
 ```
 If a prior verify report exists: note `PRIOR_VERIFY=true` and store the prior findings for delta comparison in Phase 2. Otherwise `PRIOR_VERIFY=false`.
 
