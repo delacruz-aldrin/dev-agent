@@ -76,6 +76,8 @@ Run **Shared: Create PR** with `TICKET_LINK`.
 
 If `DRAFT_PR=true`: pass `"draft": true` in the `gh api` POST body when creating the PR.
 
+Run **Shared: Post Slack Thread** — if Slack MCP fails: note in report and continue. Skip if `DRAFT_PR=true` (draft PRs are not ready for review).
+
 ## Phase 2 — Report
 ```
 ## PR — [title]
