@@ -151,7 +151,8 @@ If the user wants to review changes before committing, they should run fix or bu
      "in_progress": {
        "key": "HQA-3",
        "last_milestone": "branch_created",
-       "branch": "bug/HQA-3"
+       "branch": "bug/HQA-3",
+       "pr_number": null
      }
    }
    ```
@@ -163,12 +164,12 @@ If the user wants to review changes before committing, they should run fix or bu
    | `code_applied` | all file changes written |
    | `tests_passed` | `{BE_TEST_CMD}` (and FE tests if applicable) green |
    | `quality_checked` | lint + format clean |
-   | `pr_created` | `gh api` PR creation returns `PR_NUMBER` |
+   | `pr_created` | `gh api` PR creation returns `PR_NUMBER` — also write `pr_number` to `in_progress` at this point |
    | `jira_transitioned` | Jira status updated to "For Review" |
    | `slack_posted` | Slack thread posted |
 
    - On ticket completion: move key to `completed`, clear `in_progress`
-   - On resume: if `in_progress` exists with a `last_milestone`, skip all steps up to and including that milestone for that ticket, then continue from the next one
+   - On resume: if `in_progress` exists with a `last_milestone`, skip all steps up to and including that milestone for that ticket, then continue from the next one. If resuming after `pr_created` and `in_progress.pr_number` is set, restore `PR_NUMBER` from it. If `pr_number` is null (checkpoint written by an older version), re-fetch it: `gh pr list --head {branch} --repo {REPO} --state open --json number --jq '.[0].number'`
 
 ## Phase 3 — Sweep Report
 ```
