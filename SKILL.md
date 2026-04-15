@@ -128,8 +128,9 @@ First, show a preamble listing **all** keys that need values (so the user knows 
 
 [key name] ([format hint], e.g. [example]):
 ```
-After the user answers the first key and it passes validation, move to the next key. Do not re-show the full missing-keys list between prompts — just prompt the next key directly.
-After all values are collected, validate each:
+Validate each key immediately as entered — if validation fails, show the specific error and re-prompt that key only; do not advance until the value passes. After a value passes, move to the next key. Do not re-show the full missing-keys list between prompts — just prompt the next key directly.
+
+Validation rules (applied per-key as each answer is received):
 - `repo`: must match `[^/]+/[^/]+` (exactly one `/`)
 - `jira_domain`: must not contain `://` or spaces
 - `jira_project`: split on `,`, trim whitespace from each token, then drop empty tokens. If no tokens remain: re-prompt "jira_project must contain at least one project key." Each non-empty token must match `[A-Z][A-Z0-9]+` (uppercase letters and digits only, at least two characters). Normalize before writing: re-join non-empty tokens with `,` (no spaces), so `"MULTI, HQA"` is stored as `"MULTI,HQA"` and `"MULTI,"` is stored as `"MULTI"`.
