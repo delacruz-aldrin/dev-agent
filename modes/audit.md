@@ -26,8 +26,8 @@ Run **Shared: Frontend Convention Sampling** (unconditionally — audit always n
 **BE convention sampling:** find the closest existing controller (+ usecase/interactor if applicable), serializer/blueprint, and spec. Read one of each. Store as `BE_CONVENTIONS` for use in Phase 1 XML. This grounds the audit in current conventions and allows accurate detection of inconsistencies.
 
 **Prior audit state:** check for `.claude/dev-agent-audit-state.json` in the project root.
-- If found: load `previous_hashes` (a map of finding hash → first seen date). Set `PRIOR_STATE=true`.
-- If not found: set `PRIOR_STATE=false`, initialize empty map.
+- If found: load `previous_hashes` (hash → first seen date) and `run_counts` (hash → number of consecutive runs persisted). Set `PRIOR_STATE=true`.
+- If not found: set `PRIOR_STATE=false`, initialize both maps empty.
 
 Read silently based on `BE_FRAMEWORK`:
 - `rails`: `Gemfile`, `Gemfile.lock`, `config/routes.rb`, `app/` structure, `config/`
@@ -68,17 +68,24 @@ PRIOR_STATE={true/false}
 
 ## Phase 2 — Report
 For each finding, compute a short hash (finding type + file + description, first 8 chars of SHA). Tag each finding:
-- `NEW` — hash not in `previous_hashes` (or `PRIOR_STATE=false`)
-- `PERSISTED` — hash present in `previous_hashes`, include first-seen date
-- `RESOLVED` — hash was in `previous_hashes` but the issue no longer exists (include in a Resolved section)
+- `NEW` — hash not in `previous_hashes` (or `PRIOR_STATE=false`). Set `run_count=1`.
+- `PERSISTED` — hash present in `previous_hashes`, include first-seen date. Increment `run_count` from `run_counts` map (or start at 1 if not present).
+- `RESOLVED` — hash was in `previous_hashes` but the issue no longer exists (include in a Resolved section).
+
+**Persistence escalation:** after tagging, apply escalation to PERSISTED findings:
+- If `run_count >= 3` AND original severity is 🟡: escalate to 🔴. Mark as `escalated: true`. Show in report with `↑` suffix: `🔴↑ (escalated from 🟡 — persisted {run_count} runs)`.
+- Never escalate in reverse (🔴 never becomes 🟡). Never escalate NEW findings.
 
 After generating the report, write updated state back to `.claude/dev-agent-audit-state.json`:
 ```json
-{ "previous_hashes": { "<hash>": "<ISO8601 first-seen date>", ... } }
+{
+  "previous_hashes": { "<hash>": "<ISO8601 first-seen date>", ... },
+  "run_counts": { "<hash>": <number>, ... }
+}
 ```
-Include all current findings (NEW + PERSISTED). Drop RESOLVED findings.
+Include all current findings (NEW + PERSISTED). Drop RESOLVED findings from both maps.
 
-Write context per **Shared: Session Context** — write `_audit.json` with `audited_at` (now) and all current (NEW + PERSISTED) findings: hash, severity (`"high"` for 🔴, `"medium"` for 🟡), file (primary file implicated), summary (one-line description).
+Write context per **Shared: Session Context** — write `_audit.json` with `audited_at` (now) and all current (NEW + PERSISTED) findings: hash, report_index (1-based position in the numbered list), severity (effective — post-escalation), escalated (true/false), run_count, file (primary file implicated), summary (one-line description).
 
 If `PRIOR_STATE=true`: lead the report with: "Delta since last audit: N new, M persisted, P resolved."
 

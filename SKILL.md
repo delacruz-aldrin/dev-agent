@@ -421,14 +421,17 @@ Both stored in `.claude/` — gitignored, local only, never committed
   "findings": [
     {
       "hash": "<8-char hash>",
+      "report_index": 1,
       "severity": "high",
+      "escalated": false,
+      "run_count": 1,
       "file": "path/to/file.rb",
       "summary": "<one-line description of the risk>"
     }
   ]
 }
 ```
-`severity`: `"high"` for 🔴, `"medium"` for 🟡. `file`: the primary file implicated by the finding.
+`severity`: effective severity — `"high"` for 🔴, `"medium"` for 🟡. If `escalated: true`, severity has been bumped up from its original classification due to persistence. `report_index`: 1-based position in the numbered findings list from the last audit Phase 3. `run_count`: how many consecutive audit runs this finding has persisted.
 
 ### Read Rules (Phase 0)
 Check for `.claude/dev-agent/context/{TICKET_KEY}.json` at the start of Phase 0:
