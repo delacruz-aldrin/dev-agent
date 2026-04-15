@@ -90,6 +90,7 @@ The canonical key list (used for missing-key detection and validation):
 ### JQL Project Expansion
 Whenever a mode builds a JQL query using `{jira_project}`, always expand it first:
 - Parse `jira_project` by splitting on `,` and trimming whitespace → `JIRA_PROJECTS` array
+- **Drop any empty tokens** (produced by trailing commas or whitespace-only input). If all tokens are empty after this step: stop and show `⛔ jira_project config is blank or invalid. Run /dev-agent config edit to fix it.`
 - Single entry → use `project = KEY`
 - Multiple entries → use `project in (KEY1, KEY2)`
 
@@ -129,7 +130,7 @@ Show which keys need values (all for first run, or only the missing ones for par
 After all values are collected, validate each:
 - `repo`: must match `[^/]+/[^/]+` (exactly one `/`)
 - `jira_domain`: must not contain `://` or spaces
-- `jira_project`: split on `,`, trim whitespace from each token — each token must be uppercase letters and digits only. Normalize before writing: re-join tokens with `,` (no spaces), so `"MULTI, HQA"` is stored as `"MULTI,HQA"`.
+- `jira_project`: split on `,`, trim whitespace from each token, then drop empty tokens. If no tokens remain: re-prompt "jira_project must contain at least one project key." Each non-empty token must match `[A-Z][A-Z0-9]+` (uppercase letters and digits only, at least two characters). Normalize before writing: re-join non-empty tokens with `,` (no spaces), so `"MULTI, HQA"` is stored as `"MULTI,HQA"` and `"MULTI,"` is stored as `"MULTI"`.
 - `slack_channel`, `slack_group`, `pr_reviewer_team`, `pr_milestone`: must be non-empty strings
 - `base_branch`: run `git ls-remote --heads origin {value}` and capture both stdout and exit code.
   - Exit code non-zero (network error, no remote, auth failure) → warn: "Could not reach remote to verify branch '{value}' (network error or no remote configured). Accept this value anyway? (yes / re-enter)". If yes: accept and continue. If re-enter: re-prompt the field.
