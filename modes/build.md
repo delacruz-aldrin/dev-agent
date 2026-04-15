@@ -125,16 +125,20 @@ TICKET_KEY={value} | BRANCH={value}
 8. If `FE_TEST≠none`: run `{FE_TEST_CMD}`:
    - Passes → continue | Fails → fix + re-run | Still failing → revert FE changes, note in report
 9. Run **Shared: Run Quality Checks**
-10. Commit and push:
+10. **Pre-commit review gate:** show a summary of all generated and modified files with a brief description of each, then ask: "Ready to commit? (yes / review / revert all)".
+    - `yes` → proceed
+    - `review` → show full diff of each changed file, then re-ask
+    - `revert all` → revert all changes, note in report, stop
+11. Commit and push:
     ```bash
     git add {every file changed in this build}   # list files explicitly — never use git add . or git add -A
     git commit -m "feat: [short description]"
     git push origin HEAD
     ```
-11. Run **Shared: Create PR** with `TICKET_KEY` (or `none` if manual). Pass the Jira ticket URL as the ticket link.
-12. Transition Jira to "For Review" via Atlassian MCP — if fails: note in report and continue
-13. If standalone: run **Shared: Post Slack Thread**
-14. Write context per **Shared: Session Context** — record `stack` (if re-detected) only. Build does not write a `fix` key.
+12. Run **Shared: Create PR** with `TICKET_KEY` (or `none` if manual). Pass the Jira ticket URL as the ticket link.
+13. Transition Jira to "For Review" via Atlassian MCP — if fails: note in report and continue
+14. If standalone: run **Shared: Post Slack Thread**
+15. Write context per **Shared: Session Context** — record `stack` (if re-detected) only. Build does not write a `fix` key.
 
 ```
 ## New Feature — [Name]
