@@ -50,7 +50,7 @@ gh api repos/{REPO}/pulls/{pr_number}/reviews \
 ```
 If a prior verify report exists: note `PRIOR_VERIFY=true` and store the prior findings for delta comparison in Phase 2. Otherwise `PRIOR_VERIFY=false`.
 
-- Fetch Jira ticket via Atlassian MCP (cloudId = `{jira_domain}`)
+- Fetch Jira ticket via Atlassian MCP (cloudId = `{jira_domain}`). If the ticket is not found (404 / no results): stop with `⛔ Jira ticket {TICKET_KEY} not found. Check the key and try again.`
 - Fetch PR + diff: `gh api repos/{REPO}/pulls/{pr_number}` and `.../files`
 - Independently trace endpoint in live codebase (ignore PR diff) using `BE_ARCH_TRACE`
 - Produce: PR finding vs Live trace finding
