@@ -131,7 +131,10 @@ After all values are collected, validate each:
 - `jira_domain`: must not contain `://` or spaces
 - `jira_project`: split on `,`, trim whitespace from each token — each token must be uppercase letters and digits only. Normalize before writing: re-join tokens with `,` (no spaces), so `"MULTI, HQA"` is stored as `"MULTI,HQA"`.
 - `slack_channel`, `slack_group`, `pr_reviewer_team`, `pr_milestone`: must be non-empty strings
-- `base_branch`: run `git ls-remote --heads origin {value}` — if output is empty, the branch doesn't exist on the remote. Re-prompt: "Branch '{value}' not found on remote. Check the branch name and try again."
+- `base_branch`: run `git ls-remote --heads origin {value}` and capture both stdout and exit code.
+  - Exit code non-zero (network error, no remote, auth failure) → warn: "Could not reach remote to verify branch '{value}' (network error or no remote configured). Accept this value anyway? (yes / re-enter)". If yes: accept and continue. If re-enter: re-prompt the field.
+  - Exit code 0, stdout empty → the branch doesn't exist on the remote. Re-prompt: "Branch '{value}' not found on remote. Check the branch name and try again."
+  - Exit code 0, stdout non-empty → branch confirmed, accept.
 
 If any validation fails: show the specific error and re-prompt that field only. Do not re-ask fields that passed.
 
