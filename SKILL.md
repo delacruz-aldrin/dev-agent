@@ -209,7 +209,7 @@ Check in order: `front/`, `frontend/`, `app/frontend/`, `client/`, `src/` — us
 
 **`FE_LINT`:** `@biomejs/biome` → `biome` | `eslint` → `eslint` | else → `none`
 
-**`API_GEN_CMD`:** If `API_CLIENT=orval`: check Makefile and `package.json` scripts for `generate-client` or `generate-all`. Store first match.
+**`API_GEN_CMD`:** If `API_CLIENT=orval`: check Makefile and `package.json` scripts for `generate-client` or `generate-all`. Store first match. If no matching script is found: set `API_GEN_CMD=none` and warn in Session State: `[warn] API_CLIENT=orval but no generate script found — API_GEN_CMD=none`. If `API_CLIENT≠orval`: set `API_GEN_CMD=none`.
 
 ### Step 3 — Resolve FE Commands
 

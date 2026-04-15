@@ -107,7 +107,7 @@ Symptom → focus mapping:
 ## Phase 2 — Execute
 1. Apply fix to files (BE and FE as needed)
 2. Update TS interfaces if API response shape changed
-3. If `API_CLIENT=orval` and shape changed: run `{API_GEN_CMD}`
+3. If `API_CLIENT=orval` and shape changed: run `{API_GEN_CMD}` — skip if `API_GEN_CMD=none`, note in report
 4. Update frontend consuming code (hooks/service/state/component) if affected
 5. Create/update specs for every changed BE file
 6. Run `{BE_TEST_CMD}`:

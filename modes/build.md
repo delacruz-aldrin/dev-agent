@@ -110,7 +110,7 @@ TICKET_KEY={value} | BRANCH={value}
      This cannot be automatically rolled back in production. Confirm this is intentional. (yes / abort)
      ```
      If `abort`: stop and revert the generated migration file. If `yes`: run `bundle exec rails db:migrate`. Note: services must be running (`make services.up`) for migrations to work.
-   - Create co-located `.openapi.yml` fragment, run `{API_GEN_CMD}`
+   - Create co-located `.openapi.yml` fragment, run `{API_GEN_CMD}` — skip if `API_GEN_CMD=none`, note in report
 4. Create/update BE specs for all generated and modified files
 5. **AC coverage check (Jira tickets only — skip if manual):** map each acceptance criterion from the Jira ticket to the files/methods generated. Produce a checklist:
    ```

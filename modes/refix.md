@@ -161,7 +161,7 @@ Do not re-diagnose the original bug — the core fix is correct. Instead, isolat
    - If `REJECTION_TYPE=side_effects`: preserve the original core fix diff; apply only side-effect patches on top
    - If `REJECTION_TYPE=both` (treated as `wrong_root_cause` in Phase 2): apply the fresh re-diagnosis fix AND the side-effect patches from the Side Effect Map produced in Phase 2
 2. Update TS interfaces if API response shape changed
-3. If `API_CLIENT=orval` and shape changed: run `{API_GEN_CMD}`
+3. If `API_CLIENT=orval` and shape changed: run `{API_GEN_CMD}` — skip if `API_GEN_CMD=none`, note in report
 4. Update frontend consuming code (hooks/service/state/component) if affected
 5. Create/update specs for every changed BE file — with special attention to:
    - The exact scenario from the rejection (must fail before fix, pass after)

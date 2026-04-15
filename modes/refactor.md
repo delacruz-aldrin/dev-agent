@@ -173,7 +173,7 @@ Create a follow-up Jira ticket? (yes / skip)
 2. Create any new files called for by the plan
 3. Update all callers in `CALLER_SET` that require changes (import paths, renamed symbols, signature updates)
 4. If TS interfaces are affected: update them
-5. If `API_CLIENT=orval` and response shape changed: run `{API_GEN_CMD}`
+5. If `API_CLIENT=orval` and response shape changed: run `{API_GEN_CMD}` — skip if `API_GEN_CMD=none`, note in report
 6. Update or create specs for every file in `REFACTOR_SCOPE`
 7. Run **full** `{BE_TEST_CMD}` — not just specs for changed files (refactoring breaks distant callers):
    - Passes → continue
