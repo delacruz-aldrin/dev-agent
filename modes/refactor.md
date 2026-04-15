@@ -91,11 +91,14 @@ If any file in `CALLER_SET` is a third-party dependency (gem, node_module, vendo
 
 ### Step 2 — Coverage gate
 
+**If `BE_FRAMEWORK=none` AND `FE_TEST=none`:** skip this step entirely — no test infrastructure exists to check against. Note in Session State: `[coverage] skipped — no test infrastructure detected`.
+
 For each file in `REFACTOR_SCOPE`, check whether a corresponding spec/test file exists:
 - `rails`: `spec/**/*_spec.rb` matching the source path
 - `express`/Node: `*.test.ts` or `*.spec.ts` co-located or in `__tests__/`
 - `django`/`fastapi`: `test_*.py` or `*_test.py`
 - `go`: `*_test.go` in the same package
+- FE files (when `FE_TEST≠none`): apply the same pattern check using `FE_TEST_CMD`'s test file conventions
 
 Flag any file without a matching test. If any flagged files exist, pause:
 
@@ -108,7 +111,7 @@ Refactoring without tests risks silent regressions.
 Write missing specs first? (yes / skip / abort)
 ```
 
-- `yes` → write minimal coverage specs for each flagged file (happy path + key edge cases). Run `{BE_TEST_CMD}` to confirm they pass before continuing.
+- `yes` → write minimal coverage specs for each flagged file (happy path + key edge cases). Run `{BE_TEST_CMD}` to confirm they pass before continuing. If the file is FE-only, run `{FE_TEST_CMD}` instead.
 - `skip` → note coverage gaps in report and continue
 - `abort` → delete branch and stop
 
