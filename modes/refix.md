@@ -196,7 +196,7 @@ Do not re-diagnose the original bug — the core fix is correct. Instead, isolat
 2. Transition Jira back to "For Review" via Atlassian MCP — if fails: note in report and continue
 3. Run **Shared: Post Slack Thread**
 4. **Auto-verify offer:** ask: "Run `/dev-agent verify` on the new PR to confirm the corrected diagnosis holds? (yes/no)". If yes, run verify inline with `--comment` so findings are posted directly to the PR.
-5. Write context per **Shared: Session Context** — increment `refix_count`; clear `fix` and `verify` keys (new fix attempt, old findings no longer valid).
+5. Write context per **Shared: Session Context** — write `stack` (if re-detected during Phase 0); increment `refix_count`; clear `fix` and `verify` keys (new fix attempt, old findings no longer valid).
 
 ```
 ## Refix Report — [Endpoint]
