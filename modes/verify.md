@@ -40,6 +40,8 @@ Read config. Accept `/dev-agent verify [Jira link] [PR link] [--comment]`. Detec
 
 Read context per **Shared: Session Context** — if stack is cached and the lockfile mtime is unchanged, skip detection and use cached values; otherwise run Backend Detection and Frontend Detection. If `fix` key is present and `fix.branch` matches the PR's head branch, store `FIX_CONTEXT_AVAILABLE=true` to use as a trace hint in Phase 1.
 
+Read `_audit.json` per **Shared: Session Context** — apply recency gate (14 days) and overlap filter against the PR's changed files (from `.../files`). Store matching findings as `VERIFY_AUDIT_FINDINGS`. These are pre-existing risks, not introduced by the PR.
+
 **Prior verify check:** look for previous COMMENT reviews on this PR authored by the authenticated user:
 ```bash
 gh api repos/{REPO}/pulls/{pr_number}/reviews --jq '[.[] | select(.user.login == "<current_user>" and .body | startswith("## Verify Report"))]'
@@ -56,7 +58,8 @@ If a prior verify report exists: note `PRIOR_VERIFY=true` and store the prior fi
 ## Session State
 BE_FRAMEWORK={value} | FRONTEND_ROOT={value} | STORE={value} | API_CLIENT={value}
 PR_NUMBER={value} | POST_COMMENT={true/false} | PRIOR_VERIFY={true/false}
-[context] fix summary loaded (branch fix/HQA-123, N files)   ← only if FIX_CONTEXT_AVAILABLE=true
+[context] fix summary loaded (branch fix/HQA-123, N files)         ← only if FIX_CONTEXT_AVAILABLE=true
+[context] N pre-existing audit finding(s) in changed files         ← only if VERIFY_AUDIT_FINDINGS non-empty
 ```
 
 ## Phase 1 — XML
@@ -98,6 +101,8 @@ If `PRIOR_VERIFY=true`: compare current findings against the prior report. Tag e
 
 Lead the report with a delta summary: "N new findings, M resolved since last verify, P persisted."
 
+If `VERIFY_AUDIT_FINDINGS` is non-empty: include a **Pre-existing Audit Findings** section *after* New Risks — never mixed with PR-introduced findings. Each entry labelled `[pre-existing audit finding]` with its severity (use `↑` if escalated) and summary. These do not affect the verdict.
+
 ```
 ## Verify Report — [Ticket] / [PR]
 ### Verdict (SAFE TO MERGE / DO NOT MERGE / NEEDS DISCUSSION)
@@ -109,6 +114,7 @@ Lead the report with a delta summary: "N new findings, M resolved since last ver
 ### PR vs Live Trace (BE) | ### PR vs Live Trace (FE)
 ### BE/FE Contract Gaps | ### Spec Coverage (BE) | ### Test Coverage (FE)
 ### New Risks | ### Convention Consistency
+### Pre-existing Audit Findings (if VERIFY_AUDIT_FINDINGS non-empty)
 ### Findings
 | # | Severity | Status | File | Finding |
 |---|----------|--------|------|---------|
