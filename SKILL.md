@@ -542,7 +542,12 @@ Mode files contain `<analysis>` blocks in their Phase 1 sections. These are **in
 </analysis>
 ```
 
-**What correct output looks like:** after reasoning through the `<analysis>` block internally, the very next thing you write should be the section header from the Report or Execute block — for example `## Bug Report — [Endpoint]` or the first code change. Do not output any preamble, summary of your reasoning, or restatement of the analysis. Go directly from invisible reasoning to visible output.
+**What correct output looks like:**
+
+- **Report case:** after reasoning through the `<analysis>` block internally, the very next thing you write should be the Report section header — for example `## Bug Report — [Endpoint]`. Do not output any preamble, summary of your reasoning, or restatement of the analysis.
+- **Execute case:** after reasoning, go directly to applying code changes — write the first file edit or `git` command. Do not output "Based on my analysis..." or any other bridging sentence.
+
+In both cases: go directly from invisible reasoning to visible output with no transition text.
 
 ---
 
