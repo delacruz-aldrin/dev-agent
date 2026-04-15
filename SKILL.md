@@ -422,10 +422,13 @@ Persists findings across mode runs for the same ticket so modes can skip redunda
 **Per-ticket:** `.claude/dev-agent/context/{TICKET_KEY}.json`
 - Keyed by ticket key (e.g. `HQA-123`) or branch slug for manual inputs (e.g. `manual-page-list-column-widths`)
 
-**Global audit:** `.claude/dev-agent/context/_audit.json`
-- Not ticket-scoped — written by `audit`, read by `fix`
+**Global audit findings:** `.claude/dev-agent/context/_audit.json`
+- Not ticket-scoped — written by `audit` (findings list), read by `fix` for overlap-matched risks
 
-Both stored in `.claude/` — gitignored, local only, never committed
+**Audit persistence state:** `.claude/dev-agent-audit-state.json` (project root)
+- Written and read exclusively by `audit` — tracks `previous_hashes` and `run_counts` across audit runs to detect persisted findings and trigger severity escalation. Never read by fix, refix, or verify.
+
+All stored in `.claude/` — gitignored, local only, never committed
 
 ### Schema
 
