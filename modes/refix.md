@@ -34,7 +34,7 @@ Read config. Read context per **Shared: Session Context** — if stack is cached
 
 Switch to main:
 ```bash
-git checkout main && git pull origin main
+git checkout {base_branch} && git pull origin {base_branch}
 ```
 If checkout fails (uncommitted changes), stop:
 ```

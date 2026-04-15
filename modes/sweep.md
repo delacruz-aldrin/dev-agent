@@ -57,7 +57,7 @@ Wait for `yes` or adjustments before proceeding. After confirmation, skip checkp
 
 Switch to main:
 ```bash
-git checkout main && git pull origin main
+git checkout {base_branch} && git pull origin {base_branch}
 ```
 If checkout fails (uncommitted changes), stop:
 ```
@@ -127,7 +127,7 @@ Route: Bug → fix mode, everything else → build mode. For each ticket:
 
 1. Pull latest main before branching:
    ```bash
-   git checkout main && git pull origin main
+   git checkout {base_branch} && git pull origin {base_branch}
    ```
 2. Run fix or build mode fully (including FE steps per detected stack) — if tests fail after auto-fix: revert, note in sweep report, skip
 3. PR creation is part of fix/build — verify labels, milestone, reviewer via `gh api` — if fails: note in report and continue

@@ -38,7 +38,7 @@ Skip this check for manual descriptions.
 
 Switch to main:
 ```bash
-git checkout main && git pull origin main
+git checkout {base_branch} && git pull origin {base_branch}
 ```
 If checkout fails (uncommitted changes), stop:
 ```
