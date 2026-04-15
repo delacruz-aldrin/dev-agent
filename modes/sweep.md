@@ -43,7 +43,7 @@ Read config. Run Backend Detection. Run Frontend Detection.
   ⛔ Slack MCP unreachable. Check authentication before continuing.
   ```
 
-Detect `--manual` flag. If present: parse the comma-separated descriptions into a `MANUAL_ITEMS` list. Route each item to fix or build based on description keywords (verbs like "fix", "bug", "broken", "broken" → fix mode; all others → build mode). Then present the routing plan and require confirmation before continuing:
+Detect `--manual` flag. If present: parse the comma-separated descriptions into a `MANUAL_ITEMS` list. Split on `,` only — commas inside double-quoted strings (e.g. `"fix X, Y"`) are not split boundaries; strip the outer quotes after splitting. Route each item to fix or build based on description keywords (verbs like "fix", "bug", "broken", "incorrect", "wrong", "crash", "error", "regression" → fix mode; all others → build mode). Then present the routing plan and require confirmation before continuing:
 ```
 Manual sweep — routing plan:
 | # | Description | Mode |
