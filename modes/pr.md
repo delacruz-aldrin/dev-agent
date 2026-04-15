@@ -74,6 +74,8 @@ Detect Jira ticket:
 ## Phase 1 — Create PR
 Run **Shared: Create PR** with `TICKET_LINK`. `DRAFT_PR` is already set from Phase 0 — **Shared: Create PR** reads this flag and passes `"draft": true` automatically when `DRAFT_PR=true`.
 
+**Optional Jira transition** — skip if `TICKET_LINK=none` or `DRAFT_PR=true`. Ask: "Transition the Jira ticket to 'For Review'? (yes / no)". If yes: transition via Atlassian MCP (cloudId = `{jira_domain}`). If transition fails: note in report and continue.
+
 Run **Shared: Post Slack Thread** — if Slack MCP fails: note in report and continue. Skip if `DRAFT_PR=true` (draft PRs are not ready for review).
 
 ## Phase 2 — Report
