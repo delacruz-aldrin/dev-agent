@@ -81,7 +81,7 @@ The canonical key list (used for missing-key detection and validation):
 | `version` | integer — managed automatically, never prompt the user for this | `1` |
 | `repo` | `owner/repo` — must contain exactly one `/` | `C-FO/baberu` |
 | `jira_domain` | hostname only, no protocol | `your-org.atlassian.net` |
-| `jira_project` | one or more uppercase alphanumeric keys, comma-separated, no spaces (spaces around commas are accepted on input and stripped on save) | `MULTI` or `MULTI,HQA` |
+| `jira_project` | one or more uppercase alphanumeric keys, comma-separated, no spaces (spaces around commas are accepted on input and stripped on save) | `MULTI` or `MULTI,HQA` — input `"MULTI, HQA"` is normalized to `"MULTI,HQA"` before saving |
 | `slack_channel` | no `#` prefix | `team-dev-agent` |
 | `slack_group` | handle, no `@` | `likha-dev-agent-eng` |
 | `pr_reviewer_team` | GitHub team slug | `dev-agent` |
