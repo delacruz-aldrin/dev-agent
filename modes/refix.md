@@ -156,6 +156,7 @@ Do not re-diagnose the original bug — the core fix is correct. Instead, isolat
    ### Fix: [how to patch without disturbing the core fix]
    ```
 5. Carry the core fix forward unchanged. Apply only targeted patches to the at-risk callers.
+6. Cross-reference `_audit.json` per **Shared: Session Context** — apply recency gate (14 days) and overlap filter against the affected caller files from the Side Effect Map. If matches found: include them under **Related Risks** in the Phase 4 report labelled `[pre-existing audit finding]`. Skip this step for `REJECTION_TYPE=wrong_root_cause` — the new trace may touch different files entirely.
 
 ## Phase 3 — Execute
 
