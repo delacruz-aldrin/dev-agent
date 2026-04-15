@@ -25,7 +25,7 @@ Re-diagnoses a bug after a fix was rejected or reverted, then opens a corrected 
 ---
 
 ## Phase 0 — Setup
-Read config. Run Backend Detection. Run Frontend Detection.
+Read config. Read context per **Shared: Session Context** — if stack is cached and the lockfile mtime is unchanged, skip Backend/Frontend Detection and use cached values; otherwise run Backend Detection and Frontend Detection. If `verify` key is present and `verify.pr_number` matches the rejected PR argument, set `VERIFY_CONTEXT_AVAILABLE=true` and store the verify findings.
 
 **Atlassian MCP pre-flight:** fetch project metadata for `{jira_project}` via Atlassian MCP (cloudId = `{jira_domain}`). If it fails, stop immediately:
 ```
@@ -57,11 +57,22 @@ If the branch already exists, increment the suffix: try `-3`, `-4`, etc. until a
 ## Session State
 BE_FRAMEWORK={value} | FRONTEND_ROOT={value} | STORE={value} | API_CLIENT={value}
 TICKET_KEY={value} | BRANCH={value}
+[context] verify findings loaded (verdict: NEEDS_DISCUSSION, N blocking)   ← only if VERIFY_CONTEXT_AVAILABLE=true
 ```
 
 ## Phase 1 — Rejection Autopsy
 
-Analyze the rejected PR to reconstruct what was attempted and why it failed.
+**If `VERIFY_CONTEXT_AVAILABLE=true`:** present the prior verify findings as the pre-filled rejection summary:
+```
+Prior verify found:
+  Verdict: {verify.verdict}
+  Blocking findings: {verify.blocking_findings}
+
+Use these as the rejection basis? (yes / no, I'll describe it differently)
+```
+If yes: skip steps 1–4 below and go directly to the classification prompt, using the blocking findings to determine `REJECTION_TYPE`. If no: proceed with full autopsy.
+
+**Otherwise:** analyze the rejected PR to reconstruct what was attempted and why it failed.
 
 1. Read the full diff of the rejected PR: `gh pr diff {number} --repo {REPO}`
 2. Extract all reviewer comments and requested changes
@@ -183,6 +194,7 @@ Do not re-diagnose the original bug — the core fix is correct. Instead, isolat
 2. Transition Jira back to "For Review" via Atlassian MCP — if fails: note in report and continue
 3. Run **Shared: Post Slack Thread**
 4. **Auto-verify offer:** ask: "Run `/dev-agent verify` on the new PR to confirm the corrected diagnosis holds? (yes/no)". If yes, run verify inline with `--comment` so findings are posted directly to the PR.
+5. Write context per **Shared: Session Context** — increment `refix_count`; clear `fix` and `verify` keys (new fix attempt, old findings no longer valid).
 
 ```
 ## Refix Report — [Endpoint]

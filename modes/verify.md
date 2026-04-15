@@ -38,7 +38,7 @@ Read config. Accept `/dev-agent verify [Jira link] [PR link] [--comment]`. Detec
 ⛔ Atlassian MCP unreachable. Check authentication before continuing.
 ```
 
-Run Backend Detection. Run Frontend Detection. (Required to populate `BE_ARCH_TRACE` for the live codebase trace.)
+Read context per **Shared: Session Context** — if stack is cached and the lockfile mtime is unchanged, skip detection and use cached values; otherwise run Backend Detection and Frontend Detection. If `fix` key is present and `fix.branch` matches the PR's head branch, store `FIX_CONTEXT_AVAILABLE=true` to use as a trace hint in Phase 1.
 
 **Prior verify check:** look for previous COMMENT reviews on this PR authored by the authenticated user:
 ```bash
@@ -56,12 +56,15 @@ If a prior verify report exists: note `PRIOR_VERIFY=true` and store the prior fi
 ## Session State
 BE_FRAMEWORK={value} | FRONTEND_ROOT={value} | STORE={value} | API_CLIENT={value}
 PR_NUMBER={value} | POST_COMMENT={true/false} | PRIOR_VERIFY={true/false}
+[context] fix summary loaded (branch fix/HQA-123, N files)   ← only if FIX_CONTEXT_AVAILABLE=true
 ```
 
 ## Phase 1 — XML
+If `FIX_CONTEXT_AVAILABLE=true`: seed `<context>` with `fix.root_cause` and `fix.files_changed` from context — use as a starting point for the live trace, not as ground truth.
+
 ```xml
 <analysis>
-  <context>[Ticket summary, fix type, layers, PR scope — BE and FE]</context>
+  <context>[Ticket summary, fix type, layers, PR scope — BE and FE. If FIX_CONTEXT_AVAILABLE: prior root_cause and files_changed noted here]</context>
   <files>[Changed files by layer — BE: controller/model/serializer; FE: service/hooks/component/interface]</files>
   <task>
     1. Root cause or symptom only?
@@ -118,3 +121,5 @@ gh api repos/{REPO}/pulls/{pr_number}/reviews -X POST \
   -f body="<verify report markdown>"
 ```
 Note the posted review URL in the report.
+
+Write context per **Shared: Session Context** — record `verify` key: verdict, blocking_findings (array of 🔴 finding texts), pr_number, timestamp.

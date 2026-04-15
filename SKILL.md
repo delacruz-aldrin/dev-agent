@@ -366,6 +366,72 @@ At the end of Phase 0 in every mode that runs Backend or Frontend Detection, pri
 
 ---
 
+## Shared: Session Context
+
+Persists findings across mode runs for the same ticket so modes can skip redundant re-detection and hand off results directly.
+
+### Context File Location
+`.claude/dev-agent/context/{TICKET_KEY}.json`
+- Keyed by ticket key (e.g. `HQA-123`) or branch slug for manual inputs (e.g. `manual-page-list-column-widths`)
+- Stored in `.claude/` — gitignored, local only, never committed
+
+### Schema
+```json
+{
+  "ticket": "HQA-123",
+  "stack": {
+    "be_framework": "rails",
+    "frontend_root": "front/",
+    "store": "tanstack-query",
+    "api_client": "orval",
+    "detected_at": "<ISO8601>",
+    "lockfile_mtime": "<epoch ms of Gemfile / package.json / go.mod at detection time>"
+  },
+  "fix": {
+    "timestamp": "<ISO8601>",
+    "head_sha": "<git SHA after commit>",
+    "branch": "fix/HQA-123",
+    "root_cause": "<one-line summary>",
+    "files_changed": ["path/to/file.rb"],
+    "callers_checked": ["path/to/caller.rb"],
+    "side_effects": [],
+    "pr_number": 519,
+    "pr_url": "https://github.com/owner/repo/pull/519"
+  },
+  "verify": {
+    "timestamp": "<ISO8601>",
+    "pr_number": 519,
+    "verdict": "NEEDS_DISCUSSION",
+    "blocking_findings": ["<finding text>"]
+  },
+  "refix_count": 0
+}
+```
+
+### Read Rules (Phase 0)
+Check for `.claude/dev-agent/context/{TICKET_KEY}.json` at the start of Phase 0:
+- If missing: proceed with full detection as normal
+- If present: print `[context] loaded HQA-123 (fix ran <N>m ago)` in the Session State block
+
+**Stack reuse:** use cached `stack` values and skip Backend/Frontend Detection only if `stack.lockfile_mtime` matches the current mtime of the relevant lockfile (Gemfile for rails, `{FRONTEND_ROOT}/package.json` for FE, `go.mod` for go). If mismatched: re-detect and overwrite cached values. Print `[context] stack reused from cache` or `[context] stack re-detected (lockfile changed)` accordingly.
+
+**Fix summary (verify):** use `fix` data as a trace hint only if `fix.branch` matches the PR's head branch.
+
+**Verify findings (refix):** use `verify` data as the rejection basis only if `verify.pr_number` matches the rejected PR number passed as the argument.
+
+### Write Rules
+Each mode merges its key into the context file — never replaces the entire file. Read first, update the relevant key, write back.
+
+| Mode | Writes |
+|---|---|
+| `fix` | `stack` (if re-detected), `fix` (root_cause, files_changed, callers_checked, side_effects, pr_number, pr_url, head_sha, timestamp, branch) |
+| `verify` | `verify` (verdict, blocking_findings, pr_number, timestamp) |
+| `refix` | increments `refix_count`; clears `fix` and `verify` keys |
+
+Write at the **end** of the mode, after all work is done. If the write fails: note in report and continue — never block on context writes.
+
+---
+
 ## Shared: Analysis Frame
 
 Mode files contain `<analysis>` blocks in their Phase 1 sections. These are **internal reasoning scaffolds — never output them literally**. Use the structure to frame your thinking, then produce only the result described in the Report or Execute section that follows.

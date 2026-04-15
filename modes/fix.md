@@ -28,7 +28,7 @@ Diagnoses a bug and opens a PR with the fix, specs, and Slack notification.
 ---
 
 ## Phase 0 — Setup
-Read config. Run Backend Detection. Run Frontend Detection.
+Read config. Read context per **Shared: Session Context** — if stack is cached and the lockfile mtime is unchanged, skip Backend/Frontend Detection and use cached values; otherwise run Backend Detection and Frontend Detection.
 
 **Atlassian MCP pre-flight:** fetch project metadata for `{jira_project}` via Atlassian MCP (cloudId = `{jira_domain}`). If it fails, stop immediately:
 ```
@@ -61,6 +61,7 @@ Create branch per **Shared: Create Branch**.
 ## Session State
 BE_FRAMEWORK={value} | FRONTEND_ROOT={value} | STORE={value} | API_CLIENT={value}
 TICKET_KEY={value} | BRANCH={value}
+[context] loaded HQA-123 (fix ran Nm ago)   ← only if context file was found
 ```
 
 ## Phase 1 — XML
@@ -132,6 +133,7 @@ Symptom → focus mapping:
 12. Run **Shared: Create PR** with `TICKET_KEY` (or `none` if manual). Pass the Jira ticket URL as the ticket link.
 13. Transition Jira to "For Review" via Atlassian MCP — if fails: note in report and continue
 14. If standalone (not via sweep): run **Shared: Post Slack Thread**
+15. Write context per **Shared: Session Context** — record `stack` (if re-detected) and `fix` key: root_cause, files_changed, callers_checked, side_effects, pr_number, pr_url, head_sha (current HEAD), timestamp, branch.
 
 ```
 ## Bug Report — [Endpoint]
