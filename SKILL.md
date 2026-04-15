@@ -394,7 +394,7 @@ Persists findings across mode runs for the same ticket so modes can skip redunda
     "root_cause": "<one-line summary>",
     "files_changed": ["path/to/file.rb"],
     "callers_checked": ["path/to/caller.rb"],
-    "side_effects": [],
+    "side_effects": ["<file:method — one-line impact summary>"],
     "pr_number": 519,
     "pr_url": "https://github.com/owner/repo/pull/519"
   },
