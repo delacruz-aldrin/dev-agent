@@ -42,9 +42,11 @@ Read context per **Shared: Session Context** — if stack is cached and the lock
 
 Read `_audit.json` per **Shared: Session Context** — apply recency gate (14 days) and overlap filter against the PR's changed files (from `.../files`). Store matching findings as `VERIFY_AUDIT_FINDINGS`. These are pre-existing risks, not introduced by the PR.
 
-**Prior verify check:** look for previous COMMENT reviews on this PR authored by the authenticated user:
+**Prior verify check:** look for previous COMMENT reviews on this PR authored by the authenticated user. First resolve the current GitHub login, then filter:
 ```bash
-gh api repos/{REPO}/pulls/{pr_number}/reviews --jq '[.[] | select(.user.login == "<current_user>" and (.body | startswith("## Verify Report")))]'
+CURRENT_USER=$(gh api user --jq '.login')
+gh api repos/{REPO}/pulls/{pr_number}/reviews \
+  --jq "[.[] | select(.user.login == \"$CURRENT_USER\" and (.body | startswith(\"## Verify Report\")))]"
 ```
 If a prior verify report exists: note `PRIOR_VERIFY=true` and store the prior findings for delta comparison in Phase 2. Otherwise `PRIOR_VERIFY=false`.
 
