@@ -163,11 +163,13 @@ Proceed? (yes / adjust / abort)
 - `adjust` → ask what to change, revise plan, re-show, re-ask
 - `abort` → revert branch and stop
 
-**Out-of-scope findings:** if adjacent smells are found outside `REFACTOR_SCOPE`, surface them but never fix them inline:
+**Out-of-scope findings:** if adjacent smells are found outside `REFACTOR_SCOPE`, list them at the bottom of the Refactor Plan block (before the "Proceed?" gate) but never fix them inline. Do **not** ask about Jira tickets yet — just surface them:
 ```
-Also found: [description] in [file] — out of scope for this refactor.
-Create a follow-up Jira ticket? (yes / skip)
+Also found (out of scope — not changed):
+  - [description] in [file]
+  - [description] in [file]
 ```
+After the user replies `yes` to the plan, then ask once per out-of-scope finding: "Create a follow-up Jira ticket for '[description]'? (yes / skip)". This ensures no Jira calls happen before the plan is approved.
 
 ---
 
