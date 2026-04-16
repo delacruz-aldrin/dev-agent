@@ -104,21 +104,40 @@ Findings are listed above. Run /dev-agent audit again or fix MCP auth to file ti
 ```
 Stop Phase 3 here (do not ask further ticket questions). The audit report from Phase 2 is still complete and useful.
 
-Show all 🔴 and 🟡 findings numbered. Ask:
-1. "Which findings to create as Jira tickets? Reply with numbers or 'all'."
+Show all 🔴 and 🟡 findings numbered, then ask a single compound question:
 
-**Ticket volume cap:** after the user's selection is parsed, count the selected findings. If count > 5: pause before creating any tickets:
 ```
-⚠️  You've selected {count} findings for ticket creation. That's a lot at once.
-Consider batching — creating too many tickets at once can overwhelm the backlog.
-Proceed with all {count}? (yes / reduce to top 5 by severity / pick different numbers)
+Create Jira tickets for these findings?
+
+Reply in the format:  <findings> / <assign> / <project>
+
+  findings  →  numbers (e.g. 1,3,5), a range (1-5), "all", or "none"
+  assign    →  "me" or "unassigned"
+  project   →  project key (e.g. HQA){project_hint}
+
+Example:  all / me / HQA
+          1,2,4 / unassigned / MULTI
+          none   (to skip ticket creation entirely)
 ```
-Wait for response:
-- `yes` → proceed with the full selection; continue to question 2
-- `reduce to top 5 by severity` → take the 5 highest-severity findings (🔴 first, then 🟡 by order); update selection, confirm the reduced list to the user, then continue to question 2
-- `pick different numbers` → re-show the numbered finding list and re-ask question 1; repeat the cap check with the new selection
-2. "Assign to you or leave unassigned? Reply 'me' or 'unassigned'."
-3. If `{jira_project}` contains multiple keys (e.g. `MULTI,HQA`): "Which project should I create tickets in? ({jira_project})" — wait for a single key. If single key: "I'll create tickets in {jira_project}. Correct? Reply 'yes' or provide a different key." Store the chosen key as `TARGET_PROJECT`.
+
+Where `{project_hint}` is:
+- single project: omit the project line and always use `{jira_project}` as `TARGET_PROJECT`
+- multiple projects: ` — one of: {jira_project}` shown inline
+
+Parse the reply:
+- `none` → skip ticket creation entirely, end Phase 3
+- Valid format → extract `SELECTED_FINDINGS`, `ASSIGN`, `TARGET_PROJECT`
+  - `all` → all 🔴 and 🟡 findings
+  - numbers/range → parse to a list of finding indices; if any index is out of range, re-prompt once specifying the valid range
+  - single-project config → `TARGET_PROJECT={jira_project}` regardless of what user wrote in the project field
+- Invalid format → re-show the prompt once with a hint: "Couldn't parse that — try: `all / me / HQA`"
+
+**Ticket volume cap:** if `count(SELECTED_FINDINGS) > 5`, prepend a single warning before creating:
+```
+⚠️ {count} tickets selected — creating all. Reply 'top5' to reduce to the 5 highest-severity, or 'go' to proceed.
+```
+- `top5` → take the 5 highest-severity findings (🔴 first, then 🟡 by order); update `SELECTED_FINDINGS`
+- `go` (or any other reply) → proceed with full selection
 
 **Deduplication check:** Before creating each ticket, search Jira via Atlassian MCP. Sanitize the finding summary before interpolating it into JQL: remove double-quotes (`"`), square brackets (`[`, `]`), JQL reserved words (`AND`, `OR`, `NOT`, `IN`, `IS`, `WAS`, `ORDER`, `BY`), and any other special characters (`~`, `*`, `?`, `+`, `-`) — then truncate to 60 characters to avoid malformed queries:
 `project = {TARGET_PROJECT} AND summary ~ "{sanitized finding summary}" AND resolution = Unresolved`
