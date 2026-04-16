@@ -6,19 +6,19 @@ A twelve-mode Claude Code skill that automates the full dev workflow — from Ji
 
 | Command | Arguments | What it does |
 |---|---|---|
-| `/dev-agent audit` | _(none)_ | Scans the full codebase for risks and architectural issues; tracks findings across runs (new/persisted/resolved) and offers to create Jira tickets |
-| `/dev-agent fix` | `[ticket key or URL]` or `[description]` | Diagnoses a bug with side-effect checking, applies a scoped fix, runs tests with a pre-commit review gate, opens a PR, and transitions the Jira ticket |
-| `/dev-agent refix` | `[ticket] [rejected PR]` | Re-diagnoses after a fix was rejected — classifies rejection reason (root cause / side effects / both), applies a corrected fix on a new branch, and offers to auto-verify |
+| `/dev-agent audit` | _(none)_ | Scans the full codebase for risks and architectural issues; tracks findings across runs (new/persisted/resolved), escalates persistent findings to high severity after 3+ runs, and offers to create Jira tickets |
+| `/dev-agent fix` | `[ticket key or URL]` or `[description]` | Diagnoses a bug with side-effect checking, surfaces pre-existing audit findings for affected files, applies a scoped fix, runs tests with a pre-commit review gate, opens a PR, and transitions the Jira ticket |
+| `/dev-agent refix` | `[ticket] [rejected PR]` | Re-diagnoses after a fix was rejected — classifies rejection reason (root cause / side effects / both), cross-references audit findings for side-effect rejections, applies a corrected fix on a new branch, and offers to auto-verify |
 | `/dev-agent build` | `[ticket key or URL]` or `[description]` | Generates a full feature from a Jira ticket with duplicate endpoint guard, destructive migration safety, AC coverage check, and BE+FE wiring |
 | `/dev-agent sweep` | _(none)_ or `--manual "desc1, desc2"` | Batch-processes all open assigned Jira tickets end-to-end with scope preview, routing confirmation, and intra-ticket checkpoint/resume. Use `--manual` to process descriptions without Jira. |
-| `/dev-agent verify` | `[ticket] [PR]` or `[ticket] [PR] --comment` | Pre-merge root cause check — independently traces the code path and returns a SAFE TO MERGE / DO NOT MERGE / NEEDS DISCUSSION verdict. Add `--comment` to post findings as a GitHub review. |
-| `/dev-agent respond` | `[your PR]` | Addresses all open review comments (auto-applies GitHub Suggestions), pushes updates, polls required CI checks, then re-requests review |
-| `/dev-agent review` | `[colleague's PR]` | Reviews a colleague's PR with urgency calibration, stale thread escalation, new pattern detection, inline comments, verdict, and Slack notification |
+| `/dev-agent verify` | `[ticket] [PR]` or `[ticket] [PR] --comment` | Pre-merge root cause check — independently traces the code path, surfaces pre-existing audit findings in changed files, and returns a SAFE TO MERGE / DO NOT MERGE / NEEDS DISCUSSION verdict. Add `--comment` to post findings as a GitHub review. |
+| `/dev-agent respond` | `[your PR]` | Addresses all open review comments (auto-applies GitHub Suggestions), surfaces pre-existing audit findings in changed files, pushes updates, polls required CI checks, then re-requests review |
+| `/dev-agent review` | `[colleague's PR]` | Reviews a colleague's PR with urgency calibration, stale thread escalation, pre-existing audit findings awareness, new pattern detection, inline comments, verdict, and Slack notification |
 | `/dev-agent follow-up` | `[PR]` or _(none for all)_ | Shows a PR health dashboard (CI status, review count, unresolved threads) before nudging; posts Slack nudges oldest-first; escalates to a GitHub comment for PRs open 7+ days |
 | `/dev-agent setup <url> [url2 ...]` | Confluence, Jira, or any web URL | Reads setup docs, deduplicates steps, snapshots machine state, executes, and verifies |
 | `/dev-agent setup --rollback [id]` | Snapshot ID or _(none to list)_ | Rolls back a previous setup session — restores config files, uninstalls brew/npm/pip packages, removes created files |
 | `/dev-agent setup --diff <id1> <id2>` | Two snapshot IDs to compare | Compares two setup snapshots side by side — shows added/removed packages and config file changes between sessions |
-| `/dev-agent pr` | `[ticket key or URL]` or _(none)_ or `--draft` | Opens a PR for the current branch using the project's PR template — labels, milestone, and reviewer applied automatically. Pass `--draft` to open as a draft. |
+| `/dev-agent pr` | `[ticket key or URL]` or _(none)_ or `--draft` | Opens a PR for the current branch using the project's PR template — labels, milestone, and reviewer applied automatically; offers optional Jira ticket transition. Pass `--draft` to open as a draft. |
 | `/dev-agent refactor` | _(IDE selection)_ or `[file]` or `[file:start-end]` or `"[description]"` or `--from-audit <n>` | Restructures code without changing behavior — coverage gate before touching anything, plan shown for approval, full test suite after, PR with quality label. |
 | `/dev-agent config` | _(see below)_ | View, edit, reset, or validate project config |
 
@@ -35,6 +35,7 @@ Natural workflows — what to run next:
 | Reviewer needs a nudge | `follow-up` |
 | Batch of tickets (end-of-sprint) | `sweep` |
 | Code smells / tech debt surface | `audit` |
+| Audit finding keeps recurring across runs | `audit` (auto-escalates after 3 runs) → `refactor --from-audit <n>` |
 | Audit finding needs structural cleanup | `audit` → `refactor --from-audit <n>` |
 | Inline refactor (file, lines, or IDE selection) | `refactor <target>` |
 | Review a colleague's PR | `review` |
