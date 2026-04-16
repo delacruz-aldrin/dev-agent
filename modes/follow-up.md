@@ -64,18 +64,28 @@ For each PR, collect the following health data:
 
 Filter out already-approved PRs (`approved = true`). Sort remaining PRs by `days_open` descending (oldest first).
 
-**Show PR dashboard** before nudging — always display this, even when only one PR matches:
-```
-## Your Open PRs
-| # | PR | Days Open | Last Activity | CI | Reviews | Unresolved |
-|---|-----|-----------|---------------|-----|---------|------------|
-| 1 | #519 — Add export endpoint | 12d | 3d ago | ✅ passing | 1 | 2 threads |
-| 2 | #507 — Fix login redirect | 6d | 1d ago | ❌ failing | 0 | 0 threads |
-| 3 | #501 — Refactor auth | 2d | 4h ago | ⏳ pending | 0 | 0 threads |
+**Show PR dashboard:**
+- **Multiple PRs (2+):** always show the dashboard table and wait for confirmation before nudging:
+  ```
+  ## Your Open PRs
+  | # | PR | Days Open | Last Activity | CI | Reviews | Unresolved |
+  |---|-----|-----------|---------------|-----|---------|------------|
+  | 1 | #519 — Add export endpoint | 12d | 3d ago | ✅ passing | 1 | 2 threads |
+  | 2 | #507 — Fix login redirect | 6d | 1d ago | ❌ failing | 0 | 0 threads |
+  | 3 | #501 — Refactor auth | 2d | 4h ago | ⏳ pending | 0 | 0 threads |
 
-Nudging all 3 in order above. Reply with PR numbers to skip any (e.g. "skip 2"), or 'yes' to proceed.
-```
-Wait for response before nudging. If user skips any PRs, remove them from the list.
+  Nudging all 3 in order above. Reply with PR numbers to skip any (e.g. "skip 2"), or 'yes' to proceed.
+  ```
+  Wait for response before nudging. If user skips any PRs, remove them from the list.
+
+- **Single PR (1 remaining after filter):** skip the confirmation prompt — print the single-PR health line and proceed directly to nudging:
+  ```
+  ## PR #519 — Add export endpoint
+  12d open | last activity 3d ago | ✅ CI passing | 1 review | 2 unresolved threads
+  ```
+  No "yes/skip" gate — the user already named the PR (or there's only one), so go straight to Phase 1.
+
+- **Zero PRs after filter:** stop — "No open unapproved PRs found."
 
 ## Phase 1 — Status Check
 Skip if merged, closed, or already approved.
