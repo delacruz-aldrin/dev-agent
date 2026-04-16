@@ -371,6 +371,12 @@ gh api repos/{REPO}/pulls/{PR_NUMBER}/requested_reviewers -X POST --input - <<'E
 {"team_reviewers": ["{pr_reviewer_team}"]}
 EOF
 ```
+If this call fails (non-zero exit or error body): print inline immediately after the PR URL line:
+```
+⚠️  Reviewer team '{pr_reviewer_team}' could not be assigned — PR created without reviewers.
+    Check the pr_reviewer_team config value with /dev-agent config validate.
+```
+Note in report and continue — do not abort.
 
 **Milestone** — look up ID then set. Use `--paginate` to handle repos with more than 30 milestones. Guard against an empty result before patching:
 ```bash
@@ -378,15 +384,16 @@ MILESTONE_ID=$(gh api repos/{REPO}/milestones --paginate \
   --jq '.[] | select(.title=="{pr_milestone}") | .number' | head -1)
 
 if [ -z "$MILESTONE_ID" ]; then
-  # Note in report: milestone '{pr_milestone}' not found — skipping assignment.
-  # Check the pr_milestone config value with /dev-agent config validate.
+  # Print inline immediately after the PR URL line:
+  # ⚠️  Milestone '{pr_milestone}' not found — PR created without milestone.
+  #     Check the pr_milestone config value with /dev-agent config validate.
 else
   gh api repos/{REPO}/issues/{PR_NUMBER} -X PATCH \
     -F milestone=$MILESTONE_ID
 fi
 ```
 
-If any metadata step fails: note in report and continue — do not abort.
+If any other metadata step fails: note in report and continue — do not abort.
 
 ---
 
