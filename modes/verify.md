@@ -5,14 +5,18 @@
 ```
 /dev-agent verify [Jira link or ticket key] [PR link or number]
 /dev-agent verify [Jira link or ticket key] [PR link or number] --comment
+/dev-agent verify [Jira link or ticket key]   ← PR inferred from context if fix/build ran first
 ```
 
 Pre-merge root cause check. Independently traces the affected code path in the live codebase and compares it against what the PR actually changed — surfaces gaps, missing specs, BE/FE contract mismatches, and new risks.
 
-**Both arguments required.** By default, read-only — does not modify files or post GitHub comments. Pass `--comment` to post the findings as a GitHub COMMENT review on the PR instead of just printing.
+**PR argument is optional when context is available** — if you ran `/dev-agent fix` or `/dev-agent build` for the same ticket, the PR number is stored in the context file and inferred automatically. Pass it explicitly if context is absent or you want to verify a different PR. By default, read-only — does not modify files or post GitHub comments. Pass `--comment` to post the findings as a GitHub COMMENT review on the PR instead of just printing.
 
 **Examples:**
 ```
+/dev-agent verify HQA-37771
+→ PR inferred from context (fix or build ran previously for this ticket)
+
 /dev-agent verify HQA-37771 519
 → Fetches ticket + PR #519 diff, traces the endpoint independently, reports verdict with blocking/non-blocking findings
 
@@ -32,6 +36,17 @@ Pre-merge root cause check. Independently traces the affected code path in the l
 
 ## Phase 0 — Setup
 Read config. Accept `/dev-agent verify [Jira link] [PR link] [--comment]`. Detect `--comment` flag — store as `POST_COMMENT=true` or `false`.
+
+**Argument resolution:** if no PR link or number is provided, attempt to infer it from context:
+- Read context file for the given ticket key per **Shared: Session Context**
+- If `fix.pr_number` is present → use it; log `[context] PR #N inferred from fix context` in Session State
+- Else if `build.pr_number` is present → use it; log `[context] PR #N inferred from build context` in Session State
+- If neither is present and no PR was passed: stop with:
+  ```
+  ⛔ No PR specified and no context found for {TICKET_KEY}.
+  Usage: /dev-agent verify [ticket] [PR link or number]
+  If you ran /dev-agent fix or /dev-agent build first, make sure it completed successfully.
+  ```
 
 **Atlassian MCP pre-flight:** fetch project metadata for `{jira_project}` via Atlassian MCP (cloudId = `{jira_domain}`). If it fails, stop immediately:
 ```
