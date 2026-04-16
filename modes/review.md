@@ -29,6 +29,12 @@ Automatically detects whether this is a first review or a follow-up review based
 ## Phase 0 — Setup + Ownership Check
 Read config. Run Backend Detection. Run Frontend Detection. Store results as session variables — these are required for BE/FE contract checks and test coverage analysis in Phase 1.
 
+**Missing argument:** if no PR link or number was provided, stop immediately:
+```
+⛔ No PR specified. Usage: /dev-agent review [PR link or number]
+   Example: /dev-agent review 518
+```
+
 **Atlassian MCP pre-flight:** fetch project metadata for `{jira_project}` via Atlassian MCP (cloudId = `{jira_domain}`). If it fails, stop immediately:
 ```
 ⛔ Atlassian MCP unreachable. Check authentication before continuing.

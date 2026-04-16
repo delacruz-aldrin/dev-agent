@@ -41,7 +41,11 @@ If checkout fails (uncommitted changes), stop:
 ⛔ Could not switch to {base_branch}. If you have uncommitted changes, stash (`git stash`) or commit them first. Otherwise check that {base_branch} exists and the remote is reachable.
 ```
 
-Detect input — both are required. If either is missing, ask before continuing:
+**Missing arguments:** check before proceeding. If either is missing, stop with the specific error:
+- No Jira ticket: `⛔ No ticket specified. Usage: /dev-agent refix [ticket] [rejected PR]   Example: /dev-agent refix HQA-37771 501`
+- No rejected PR: `⛔ No rejected PR specified. Usage: /dev-agent refix [ticket] [rejected PR]   Example: /dev-agent refix HQA-37771 501`
+
+Detect input — both are required:
 - **Jira ticket** (link or key) → fetch via Atlassian MCP (cloudId = `{jira_domain}`) — description, steps to reproduce, expected, actual, any updated acceptance criteria. Derive `TICKET_KEY` from URL or key.
 - **Rejected PR** (GitHub PR link or number) → fetch via `gh pr view {number} --repo {REPO} --json title,body,comments,reviews,files` — diff, reviewer comments, and any CI failure details.
 
