@@ -112,7 +112,11 @@ Do not proceed to Phase 2 until the summary and classification are complete.
 
 ## Phase 2 — Re-diagnosis
 
-**If `REJECTION_TYPE=both`:** execute the `wrong_root_cause` branch below in full (re-diagnose from scratch), then ALSO run the Side Effect Map steps from the `side_effects` branch as an additional step. Both the fresh diagnosis AND the side-effect patches apply to Phase 3.
+**If `REJECTION_TYPE=both`:** run the two branches in order:
+1. **First:** execute the full `wrong_root_cause` branch (re-diagnose from scratch, produce a fresh XML analysis, identify the correct root cause). Complete this entirely before moving to step 2.
+2. **Then:** run the Side Effect Map steps from the `side_effects` branch — using the *new* diagnosis's changed files (not the old rejected diff) as the input. The Side Effect Map looks for unintended callers of whatever the fresh fix touches.
+
+Both outputs feed Phase 3: apply the fresh re-diagnosis fix first, then layer side-effect patches on top. If the fresh diagnosis and a side-effect patch touch the same file, resolve by applying the re-diagnosis change first and adapting the side-effect patch to not conflict with it — note any such merge in the report.
 
 ### If `REJECTION_TYPE=wrong_root_cause`
 
