@@ -105,7 +105,7 @@ After all threads:
    - All `conclusion = success` → **CI passes** → re-request review (human reviewers only, filter out `[bot]`) + `{pr_reviewer_team}` team
    - Any `conclusion = failure` → **CI fails** → note in report, post to Slack noting CI failure, do not re-request review
    - Still pending after 10 attempts → treat as CI inconclusive: note in report, do not re-request review
-6. Transition Jira to "For Review" via Atlassian MCP — if fails: note in report and continue
+7. Transition Jira to "For Review" via Atlassian MCP — if fails: note in report and continue
 7. Slack to `#{slack_channel}` — no mentions. Find thread via targeted text search in order: full URL (raw) → full URL wrapped as `<https://...>` → `{repo}/pull/{number}` → `pull/{number}` → PR title verbatim. Do NOT browse recent messages. Reply if found, new message if not:
    ```
    ✅ PR comments addressed — [PR title]
