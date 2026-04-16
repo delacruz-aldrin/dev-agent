@@ -117,10 +117,11 @@ git add .claude/dev-agent.json && git commit -m "chore: add dev-agent config"
 ### Config commands
 
 ```sh
-/dev-agent config            # show current values
-/dev-agent config edit       # update specific keys interactively
-/dev-agent config validate   # test GitHub, Jira, and Slack connectivity
-/dev-agent config reset      # wipe and redo setup
+/dev-agent config                          # show current values
+/dev-agent config edit                     # update specific keys interactively
+/dev-agent config validate                 # test GitHub, Jira, and Slack connectivity
+/dev-agent config reset                    # wipe and redo setup
+/dev-agent config show-context [ticket]    # inspect stored context for a ticket key
 ```
 
 ## Uninstall

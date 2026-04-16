@@ -561,10 +561,11 @@ In both cases: go directly from invisible reasoning to visible output with no tr
 ## Utility: dev-agent config
 
 ```
-/dev-agent config            ← show current config
-/dev-agent config edit       ← update specific values interactively
-/dev-agent config reset      ← wipe and redo setup
-/dev-agent config validate   ← test connectivity for all configured integrations
+/dev-agent config                          ← show current config
+/dev-agent config edit                     ← update specific values interactively
+/dev-agent config reset                    ← wipe and redo setup
+/dev-agent config validate                 ← test connectivity for all configured integrations
+/dev-agent config show-context [ticket]    ← inspect stored context for a ticket key
 ```
 
 **Show:** Display all key-value pairs from `.claude/dev-agent.json` in a table. If missing: "No config found. Run any dev-agent mode to trigger setup."
@@ -588,3 +589,30 @@ Report pass/fail per integration:
 ✅ Base branch — main exists on remote
 ```
 If any fail: suggest the specific fix (wrong channel name, missing MCP, repo not found, branch name typo, etc.).
+
+**Show-context:** display the stored context for a given ticket key. Usage:
+```
+/dev-agent config show-context HQA-123
+/dev-agent config show-context             ← lists all context files if no key given
+```
+- No key: list all `.claude/dev-agent/context/` files with their ticket key, last-modified time, and which keys are present (`fix`, `build`, `verify`, `stack`). Show `_audit.json` separately if it exists.
+- With key: read `.claude/dev-agent/context/{TICKET_KEY}.json` and display a human-readable summary:
+  ```
+  ## Context — HQA-123
+
+  Stack (cached 2h ago, lockfile unchanged):
+    BE_FRAMEWORK=rails | FRONTEND_ROOT=front/ | STORE=tanstack-query | API_CLIENT=orval
+
+  Fix (ran 2h ago):
+    Branch:      fix/HQA-123
+    Root cause:  nil check missing in UserSerializer#suspended_at
+    Files:       app/serializers/user_serializer.rb, spec/serializers/user_serializer_spec.rb
+    PR:          #519 — https://github.com/owner/repo/pull/519
+
+  Verify (ran 1h ago):
+    Verdict:     NEEDS_DISCUSSION
+    Blocking:    nil check missing for suspended users
+
+  Refix count: 0
+  ```
+  If the file doesn't exist: "No context found for {TICKET_KEY}. Run /dev-agent fix or /dev-agent build first."
